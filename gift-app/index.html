@@ -1,0 +1,354 @@
+<title>The Impossible Gift Machine</title>
+<meta name="description" content="Crank the lever and the machine invents a one-of-a-kind gift, just for you.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Spline+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --ink:#f4ecdd;         /* cream text */
+    --ink-soft:#c9b9a6;
+    --plum:#1c1330;        /* deep ground */
+    --plum-2:#271a45;
+    --plum-3:#170f27;
+    --brass:#e8b84b;       /* gold accent */
+    --brass-deep:#b6871f;
+    --ribbon:#f0567a;      /* coral pop */
+    --teal:#4fd1c5;
+    --line:rgba(232,184,75,.22);
+    --shadow:0 24px 60px -20px rgba(0,0,0,.75);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(120% 90% at 50% -10%, #33235c 0%, var(--plum) 45%, var(--plum-3) 100%);
+    color:var(--ink);
+    font-family:'Spline Sans',system-ui,sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1020px;margin:0 auto;padding:32px 20px 72px;position:relative;z-index:2}
+
+  header{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin-bottom:14px}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.42em;text-transform:uppercase;color:var(--brass);opacity:.85}
+  h1{
+    font-family:'Fraunces',Georgia,serif;font-weight:600;
+    font-size:clamp(34px,7vw,64px);line-height:.98;margin:0;text-wrap:balance;
+    background:linear-gradient(180deg,#fff5df,var(--brass) 60%,var(--brass-deep));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 2px 0 rgba(0,0,0,.25));
+  }
+  .tagline{max-width:46ch;color:var(--ink-soft);font-size:15px;text-wrap:balance}
+
+  /* machine */
+  .machine{
+    margin:26px auto 0;max-width:520px;
+    background:linear-gradient(180deg,var(--plum-2),var(--plum-3));
+    border:1px solid var(--line);border-radius:26px;
+    box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.05);
+    padding:26px 26px 22px;position:relative;
+  }
+  .bolts{position:absolute;inset:12px;border:1px dashed rgba(232,184,75,.18);border-radius:18px;pointer-events:none}
+  .stage{
+    position:relative;height:300px;border-radius:16px;
+    background:
+      radial-gradient(80% 60% at 50% 20%, rgba(240,86,122,.16), transparent 70%),
+      repeating-linear-gradient(45deg, rgba(255,255,255,.018) 0 14px, transparent 14px 28px),
+      var(--plum-3);
+    border:1px solid var(--line);overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  canvas#confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
+
+  /* the wrapped box (CSS) */
+  .box{position:relative;width:150px;height:132px;transform-origin:50% 100%;transition:opacity .3s}
+  .box .lid,.box .body{position:absolute;left:0;right:0;border-radius:8px}
+  .box .body{bottom:0;height:96px;background:linear-gradient(145deg,#5b3fa6,#3a2570);box-shadow:inset 0 -8px 18px rgba(0,0,0,.35)}
+  .box .lid{top:0;height:42px;background:linear-gradient(145deg,#6f4fc4,#4a2f8f);box-shadow:0 6px 14px rgba(0,0,0,.4);transform-origin:50% 100%}
+  .box .vrib,.box .hrib{position:absolute;background:linear-gradient(90deg,var(--ribbon),#ff86a2);box-shadow:0 0 12px rgba(240,86,122,.5)}
+  .box .vrib{top:0;bottom:0;left:50%;width:22px;margin-left:-11px;border-radius:4px}
+  .box .hrib{left:0;right:0;top:30px;height:20px}
+  .bow{position:absolute;top:-14px;left:50%;transform:translateX(-50%);width:56px;height:30px;z-index:3}
+  .bow::before,.bow::after{content:"";position:absolute;top:0;width:26px;height:30px;background:radial-gradient(circle at 50% 40%,#ff86a2,var(--ribbon));border-radius:50% 50% 50% 50%/60% 60% 40% 40%}
+  .bow::before{left:0;transform:rotate(-18deg)}
+  .bow::after{right:0;transform:rotate(18deg)}
+  .shake{animation:shake .5s ease-in-out infinite}
+  @keyframes shake{0%,100%{transform:rotate(0) translateY(0)}20%{transform:rotate(-5deg) translateY(-4px)}40%{transform:rotate(5deg) translateY(0)}60%{transform:rotate(-4deg) translateY(-3px)}80%{transform:rotate(3deg) translateY(0)}}
+  .pop-lid{animation:popLid .5s cubic-bezier(.2,1.4,.4,1) forwards}
+  @keyframes popLid{to{transform:translateY(-120px) rotate(-24deg);opacity:0}}
+  .box.opened .body{animation:sink .5s ease forwards}
+  @keyframes sink{to{transform:translateY(10px);opacity:0}}
+
+  /* reveal card */
+  .reveal{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:22px;opacity:0;pointer-events:none;transition:opacity .4s .2s;z-index:6}
+  .reveal.show{opacity:1;pointer-events:auto}
+  .gift-card{
+    width:100%;max-width:360px;text-align:center;
+    background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+    border:1px solid var(--line);border-radius:16px;padding:22px 20px 18px;
+    box-shadow:0 18px 40px -18px rgba(0,0,0,.7);backdrop-filter:blur(3px);
+  }
+  .gift-emoji{font-size:52px;line-height:1;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4))}
+  .gift-name{font-family:'Fraunces',serif;font-weight:600;font-size:24px;margin:10px 0 4px;text-wrap:balance;color:#fff6e4}
+  .gift-msg{color:var(--ink-soft);font-size:14px;line-height:1.5;text-wrap:balance;min-height:2.6em}
+  .gift-serial{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--brass);margin-top:12px;opacity:.9}
+  .rarity{display:inline-block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid currentColor;margin-top:10px}
+
+  /* controls */
+  .controls{display:flex;justify-content:center;margin-top:20px}
+  .lever{
+    font-family:'Fraunces',serif;font-weight:600;font-size:19px;color:#2a1a08;
+    background:linear-gradient(180deg,#ffd775,var(--brass) 55%,var(--brass-deep));
+    border:none;border-radius:14px;padding:15px 34px;cursor:pointer;
+    box-shadow:0 8px 0 var(--brass-deep),0 14px 24px -8px rgba(0,0,0,.6);
+    transition:transform .08s, box-shadow .08s;letter-spacing:.01em;
+  }
+  .lever:hover{filter:brightness(1.04)}
+  .lever:active{transform:translateY(6px);box-shadow:0 2px 0 var(--brass-deep),0 6px 14px -6px rgba(0,0,0,.6)}
+  .lever:disabled{opacity:.55;cursor:wait;transform:translateY(3px);box-shadow:0 4px 0 var(--brass-deep)}
+  .lever:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+
+  /* collection */
+  .shelf{margin-top:46px}
+  .shelf-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:18px}
+  .shelf-head h2{font-family:'Fraunces',serif;font-weight:600;font-size:22px;margin:0}
+  .count{font-family:'Space Mono',monospace;font-size:12px;color:var(--ink-soft)}
+  .clear{background:none;border:1px solid var(--line);color:var(--ink-soft);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;padding:6px 12px;border-radius:8px;cursor:pointer}
+  .clear:hover{color:var(--ribbon);border-color:var(--ribbon)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+  .cell{
+    background:linear-gradient(180deg,var(--plum-2),var(--plum-3));
+    border:1px solid var(--line);border-radius:14px;padding:16px 14px;text-align:center;
+    animation:rise .4s ease both;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .cell .e{font-size:34px;line-height:1}
+  .cell .n{font-family:'Fraunces',serif;font-size:15px;margin-top:8px;color:#fff6e4;text-wrap:balance}
+  .cell .s{font-family:'Space Mono',monospace;font-size:10px;color:var(--brass);opacity:.8;margin-top:6px}
+  .empty{color:var(--ink-soft);font-size:14px;text-align:center;padding:26px;border:1px dashed var(--line);border-radius:14px}
+
+  footer{margin-top:40px;text-align:center;color:var(--ink-soft);font-size:12px;font-family:'Space Mono',monospace;letter-spacing:.08em;opacity:.7}
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Est. Nowhere · Serves Everywhere</div>
+    <h1>The Impossible Gift Machine</h1>
+    <p class="tagline">Pull the lever. The machine reaches into somewhere impossible and invents a gift that has never existed before — yours to keep.</p>
+  </header>
+
+  <section class="machine" aria-label="Gift machine">
+    <div class="bolts" aria-hidden="true"></div>
+    <div class="stage">
+      <canvas id="confetti" aria-hidden="true"></canvas>
+      <div class="box" id="box" aria-hidden="true">
+        <div class="bow"></div>
+        <div class="lid" id="lid"></div>
+        <div class="body">
+          <div class="vrib"></div>
+          <div class="hrib"></div>
+        </div>
+      </div>
+      <div class="reveal" id="reveal" role="status" aria-live="polite">
+        <div class="gift-card">
+          <div class="gift-emoji" id="gEmoji">🎁</div>
+          <div class="gift-name" id="gName"></div>
+          <div class="gift-msg" id="gMsg"></div>
+          <div class="rarity" id="gRarity"></div>
+          <div class="gift-serial" id="gSerial"></div>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="lever" id="lever">Crank the lever</button>
+    </div>
+  </section>
+
+  <section class="shelf">
+    <div class="shelf-head">
+      <h2>Your Cabinet of Curiosities</h2>
+      <span class="count" id="count">0 gifts</span>
+      <button class="clear" id="clear" hidden>Empty shelf</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty">Nothing here yet. The shelf fills as you unwrap.</div>
+  </section>
+
+  <footer>No two gifts alike · Made for you</footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const lever=$("lever"), box=$("box"), lid=$("lid"), reveal=$("reveal");
+  const grid=$("grid"), empty=$("empty"), count=$("count"), clearBtn=$("clear");
+  const KEY="impossible-gifts-v1";
+
+  // ---- gift vocabulary ----
+  const objs=[
+    ["🫖","Teapot"],["🪁","Kite"],["🔭","Telescope"],["🧭","Compass"],["🕰️","Clock"],
+    ["🎠","Carousel"],["🪞","Mirror"],["🗝️","Key"],["🪈","Flute"],["🏮","Lantern"],
+    ["🎐","Wind-chime"],["🌂","Umbrella"],["📻","Radio"],["🪄","Wand"],["🎈","Balloon"],
+    ["🛎️","Bell"],["🧳","Suitcase"],["🎞️","Reel"],["🪅","Piñata"],["🌡️","Barometer"],
+    ["📮","Postbox"],["🎹","Piano"],["⚓","Anchor"],["🪃","Boomerang"],["🛼","Roller-skate"]
+  ];
+  const adjs=[
+    "the last","a self-winding","an unreasonably kind","a slightly haunted","the world's quietest",
+    "a pocket-sized","an entirely honest","a leftover-from-a-dream","the second-best","a fearless",
+    "a homesick","an over-caffeinated","a ceremonial","a well-travelled","a stubbornly optimistic",
+    "a hand-me-down","a moon-powered","an off-season","a beautifully wrong","a first-edition"
+  ];
+  const materials=[
+    "carved from a Tuesday","spun from static","cast in warm brass","folded from an old map",
+    "grown, not built","borrowed from a lighthouse","knitted out of patience","poured from twilight",
+    "salvaged from a shipwreck","printed on the back of a wish","forged in a small kindness",
+    "assembled while you slept","whittled from driftwood","stitched from spare afternoons"
+  ];
+  const msgs=[
+    "It hums a little when you're not looking.",
+    "Works best when shared, useless when hoarded.",
+    "Came with a note that just said: about time.",
+    "Points, always, toward whatever you've been avoiding.",
+    "Warm to the touch. Nobody knows why.",
+    "Refuses to be photographed but loves being described.",
+    "Keeps a secret perfectly. Yours, specifically.",
+    "Smells faintly of the ocean and old libraries.",
+    "Grows slightly more valuable every time you laugh.",
+    "Was made for exactly one person. Statistically, that's you.",
+    "Runs on curiosity. Fully charged the moment you opened it.",
+    "Insists it isn't lucky, then quietly is."
+  ];
+  // rarity tiers: name, chance weight, color
+  const tiers=[
+    {name:"Everyday",  w:56, c:"#c9b9a6"},
+    {name:"Uncommon",  w:28, c:"#4fd1c5"},
+    {name:"Rare",      w:12, c:"#8ab4ff"},
+    {name:"Fabled",    w:3.4,c:"#f0567a"},
+    {name:"Impossible",w:0.6,c:"#ffd775"}
+  ];
+
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  function rollTier(){
+    const total=tiers.reduce((s,t)=>s+t.w,0);
+    let r=Math.random()*total;
+    for(const t of tiers){ if((r-=t.w)<=0) return t; }
+    return tiers[0];
+  }
+  function serial(){
+    const s="ABCDEFGHJKLMNPQRSTUVWXYZ";
+    const p=n=>Array.from({length:n},()=>s[Math.floor(Math.random()*s.length)]).join("");
+    return "№ "+p(2)+"-"+String(Math.floor(1000+Math.random()*9000));
+  }
+  function makeGift(){
+    const [emoji,noun]=pick(objs);
+    const tier=rollTier();
+    return {
+      emoji, tier:tier.name, tierColor:tier.c,
+      name: cap(pick(adjs))+" "+noun,
+      sub: cap(pick(materials))+".",
+      msg: pick(msgs),
+      serial: serial(),
+      at: Date.now()
+    };
+  }
+  const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+
+  // ---- storage ----
+  function load(){ try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return []} }
+  function save(a){ try{localStorage.setItem(KEY,JSON.stringify(a.slice(-60)))}catch(e){} }
+  let shelf=load();
+
+  function renderShelf(){
+    count.textContent = shelf.length+(shelf.length===1?" gift":" gifts");
+    clearBtn.hidden = shelf.length===0;
+    empty.hidden = shelf.length>0;
+    grid.innerHTML="";
+    [...shelf].reverse().forEach(g=>{
+      const d=document.createElement("div");
+      d.className="cell";
+      d.innerHTML=`<div class="e">${g.emoji}</div><div class="n"></div>
+        <div class="s" style="color:${g.tierColor||'#e8b84b'}">${g.tier||''}</div>`;
+      d.querySelector(".n").textContent=g.name;
+      d.title=g.msg||"";
+      grid.appendChild(d);
+    });
+  }
+  renderShelf();
+
+  // ---- confetti ----
+  const cv=$("confetti"), ctx=cv.getContext("2d");
+  let parts=[], raf=null, dpr=Math.min(window.devicePixelRatio||1,2);
+  function sizeCanvas(){
+    const r=cv.getBoundingClientRect();
+    cv.width=r.width*dpr; cv.height=r.height*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  const palette=["#e8b84b","#f0567a","#4fd1c5","#8ab4ff","#fff6e4","#ffd775"];
+  function burst(n){
+    sizeCanvas();
+    const r=cv.getBoundingClientRect(), cx=r.width/2, cy=r.height/2;
+    for(let i=0;i<n;i++){
+      const a=Math.random()*Math.PI*2, sp=3+Math.random()*7;
+      parts.push({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-3,
+        g:0.14+Math.random()*0.1, s:5+Math.random()*6,
+        rot:Math.random()*6.28, vr:(Math.random()-.5)*.4,
+        c:pick(palette), life:60+Math.random()*40, t:0});
+    }
+    if(!raf) raf=requestAnimationFrame(tick);
+  }
+  function tick(){
+    const r=cv.getBoundingClientRect();
+    ctx.clearRect(0,0,r.width,r.height);
+    parts=parts.filter(p=>p.t<p.life);
+    for(const p of parts){
+      p.t++; p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; p.vx*=0.99;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.globalAlpha=Math.max(0,1-p.t/p.life);
+      ctx.fillStyle=p.c; ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6);
+      ctx.restore();
+    }
+    if(parts.length) raf=requestAnimationFrame(tick);
+    else { ctx.clearRect(0,0,r.width,r.height); raf=null; }
+  }
+
+  // ---- sequence ----
+  let busy=false;
+  function cranking(){
+    if(busy) return; busy=true;
+    lever.disabled=true; lever.textContent="…the gears turn…";
+    // reset box
+    reveal.classList.remove("show");
+    box.classList.remove("opened"); lid.classList.remove("pop-lid");
+    box.style.opacity="1"; box.classList.add("shake");
+
+    setTimeout(()=>{
+      box.classList.remove("shake");
+      lid.classList.add("pop-lid");
+      box.classList.add("opened");
+      const g=makeGift();
+      burst(g.tier==="Impossible"?260:g.tier==="Fabled"?200:150);
+      $("gEmoji").textContent=g.emoji;
+      $("gName").textContent=g.name;
+      $("gMsg").textContent=g.sub+" "+g.msg;
+      const rEl=$("gRarity"); rEl.textContent=g.tier; rEl.style.color=g.tierColor;
+      $("gSerial").textContent=g.serial;
+      setTimeout(()=>{ box.style.opacity="0"; reveal.classList.add("show"); },260);
+
+      shelf.push(g); save(shelf); renderShelf();
+
+      lever.textContent="Crank again";
+      lever.disabled=false; busy=false;
+    }, 1200);
+  }
+
+  lever.addEventListener("click",cranking);
+  clearBtn.addEventListener("click",()=>{
+    shelf=[]; save(shelf); renderShelf();
+    reveal.classList.remove("show"); box.style.opacity="1";
+  });
+  window.addEventListener("resize",()=>{ if(raf) sizeCanvas(); });
+})();
+</script>
