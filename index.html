@@ -1,0 +1,68 @@
+<title>Studio Index</title>
+<meta name="description" content="A small studio of interactive, single-file web apps.">
+<style>
+  :root{
+    color-scheme:light;
+    --plane:#f6f7f9; --surface:#ffffff; --ink:#0c1220; --ink-2:#4b5468; --muted:#8a92a4;
+    --border:rgba(12,18,32,.10); --accent:#2a78d6;
+    --shadow:0 1px 2px rgba(12,18,32,.05), 0 16px 40px -24px rgba(12,18,32,.35);
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark; --plane:#0b0e15; --surface:#151a24; --ink:#f2f5fa; --ink-2:#aab3c5;
+    --muted:#79839a; --border:rgba(255,255,255,.10); --accent:#3987e5;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 18px 44px -24px rgba(0,0,0,.8);
+  }}
+  :root[data-theme="dark"]{
+    color-scheme:dark; --plane:#0b0e15; --surface:#151a24; --ink:#f2f5fa; --ink-2:#aab3c5;
+    --muted:#79839a; --border:rgba(255,255,255,.10); --accent:#3987e5;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 18px 44px -24px rgba(0,0,0,.8);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--plane);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    line-height:1.5;min-height:100vh}
+  .wrap{max-width:900px;margin:0 auto;padding:64px 24px 80px}
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  h1{font-size:clamp(30px,6vw,46px);font-weight:800;letter-spacing:-.03em;margin:8px 0 6px;text-wrap:balance}
+  .lede{color:var(--ink-2);max-width:60ch;margin:0 0 40px;font-size:16px}
+  .apps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+  a.app{display:block;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--border);
+    border-radius:16px;padding:22px;box-shadow:var(--shadow);transition:transform .14s, border-color .14s}
+  a.app:hover{transform:translateY(-3px);border-color:var(--accent)}
+  a.app:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .icon{font-size:30px;line-height:1}
+  .app h2{font-size:18px;margin:12px 0 4px;font-weight:700}
+  .app p{margin:0;color:var(--ink-2);font-size:14px}
+  .go{margin-top:14px;font-size:13px;font-weight:600;color:var(--accent)}
+  footer{margin-top:48px;color:var(--muted);font-size:13px;border-top:1px solid var(--border);padding-top:18px}
+  @media (prefers-reduced-motion:reduce){a.app{transition:none}}
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">Interactive · Single-file · No dependencies</div>
+  <h1>Studio Index</h1>
+  <p class="lede">A small collection of self-contained web apps — each one page, no build step. Open any of them below.</p>
+
+  <div class="apps">
+    <a class="app" href="./account-intelligence/">
+      <div class="icon">🎯</div>
+      <h2>Account Intelligence</h2>
+      <p>Score prospective companies from 10-K signals into Pursue / Watch / Avoid tiers.</p>
+      <div class="go">Open →</div>
+    </a>
+    <a class="app" href="./sales-ops-dashboard/">
+      <div class="icon">📊</div>
+      <h2>Sales Ops Command</h2>
+      <p>Bookings vs quota, pipeline funnel, win rate, and a rep leaderboard.</p>
+      <div class="go">Open →</div>
+    </a>
+    <a class="app" href="./gift-app/">
+      <div class="icon">🎁</div>
+      <h2>The Impossible Gift Machine</h2>
+      <p>Crank the lever and the machine invents a one-of-a-kind gift, just for you.</p>
+      <div class="go">Open →</div>
+    </a>
+  </div>
+
+  <footer>Built with Claude Code · served via GitHub Pages</footer>
+</div>
