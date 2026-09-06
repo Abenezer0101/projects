@@ -6,7 +6,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 
 ## Week 1 — SQL & Databases
 - [x] **Day 1** — Instagram DB system + Excel KPI analysis + US population/income dashboard *(done)*
-- [ ] **Day 2** — Library management DB: schema, seed, checkout/overdue queries + a SQL quick-reference doc
+- [x] **Day 2** — Library management DB: schema, seed, checkout/overdue queries + a SQL quick-reference doc *(done)*
 - [ ] **Day 3** — E-commerce DB: orders/products/customers schema + revenue & AOV analytics queries
 - [ ] **Day 4** — SQL window-functions playground: running totals, rankings, cohort retention on a sample sales set
 - [ ] **Day 5** — Movie ratings DB: schema + "users who liked X also liked" recommendation queries
