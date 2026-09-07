@@ -10,6 +10,7 @@ Data, analytics, and application builds.
 | [E-commerce Analytics Database](./ecommerce-analytics-db/) | MySQL | Customers/products/orders/line-items schema with revenue, AOV, top-product, and refund-rate analytics. |
 | [SQL Window-Functions Playground](./sql-window-functions/) | MySQL | Seven worked examples — running totals, ranking, `LAG`, share-of-total, `NTILE`, moving averages. |
 | [Excel KPI Analysis](./excel-kpi-analysis/) | Excel, Python | Raw → cleaned → live-formula KPI dashboard on Georgia county population and ZIP codes. |
+| [Movie Ratings & Recommendations](./movie-ratings-db/) | MySQL | Collaborative-filtering recommendations in pure SQL from self-joined ratings. |
 | [Sales Ops Dashboard](./sales-ops-dashboard/) | JS | Sales operations dashboard. |
 | [Impossible Gift Machine](./gift-app/) | JS | Gift-picking app. |
 
