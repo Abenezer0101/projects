@@ -1,5 +1,5 @@
-<title>Studio Index</title>
-<meta name="description" content="A small studio of interactive, single-file web apps.">
+<title>Project Index</title>
+<meta name="description" content="Data analytics, database design, and interactive web projects.">
 <style>
   :root{
     color-scheme:light;
@@ -35,15 +35,27 @@
   .app p{margin:0;color:var(--ink-2);font-size:14px}
   .go{margin-top:14px;font-size:13px;font-weight:600;color:var(--accent)}
   footer{margin-top:48px;color:var(--muted);font-size:13px;border-top:1px solid var(--border);padding-top:18px}
+  h3.section{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+    font-weight:700;margin:40px 0 16px}
+  h3.section:first-of-type{margin-top:0}
+  .tag{display:inline-block;font-size:11px;font-weight:600;color:var(--muted);
+    border:1px solid var(--border);border-radius:99px;padding:2px 9px;margin-top:12px}
   @media (prefers-reduced-motion:reduce){a.app{transition:none}}
 </style>
 
 <div class="wrap">
-  <div class="eyebrow">Interactive · Single-file · No dependencies</div>
-  <h1>Studio Index</h1>
-  <p class="lede">A small collection of self-contained web apps — each one page, no build step. Open any of them below.</p>
+  <div class="eyebrow">Data · Databases · Interactive</div>
+  <h1>Project Index</h1>
+  <p class="lede">Analytics dashboards, relational database designs, and self-contained web apps. Each project has its own README with method, findings, and run instructions.</p>
 
+  <h3 class="section">Dashboards &amp; apps</h3>
   <div class="apps">
+    <a class="app" href="./us-population-income-dashboard/">
+      <div class="icon">🗺️</div>
+      <h2>US Population &amp; Income</h2>
+      <p>State population vs. median household income — correlation scatter, regional roll-ups, ranked bars.</p>
+      <div class="go">Open →</div>
+    </a>
     <a class="app" href="./account-intelligence/">
       <div class="icon">🎯</div>
       <h2>Account Intelligence</h2>
@@ -61,6 +73,45 @@
       <h2>The Impossible Gift Machine</h2>
       <p>Crank the lever and the machine invents a one-of-a-kind gift, just for you.</p>
       <div class="go">Open →</div>
+    </a>
+  </div>
+
+  <h3 class="section">Data &amp; database projects</h3>
+  <div class="apps">
+    <a class="app" href="https://github.com/Abenezer0101/projects/tree/main/instagram-database-system">
+      <div class="icon">🧩</div>
+      <h2>Instagram Database System</h2>
+      <p>3NF schema for a photo-sharing platform with self-joins, correlated subqueries, and window functions.</p>
+      <div class="tag">MySQL · UML</div>
+      <div class="go">View code →</div>
+    </a>
+    <a class="app" href="https://github.com/Abenezer0101/projects/tree/main/ecommerce-analytics-db">
+      <div class="icon">🛒</div>
+      <h2>E-commerce Analytics DB</h2>
+      <p>Orders and line items with revenue, AOV, best sellers, and refund-rate queries.</p>
+      <div class="tag">MySQL</div>
+      <div class="go">View code →</div>
+    </a>
+    <a class="app" href="https://github.com/Abenezer0101/projects/tree/main/library-management-db">
+      <div class="icon">📚</div>
+      <h2>Library Management DB</h2>
+      <p>Members, copies, and loans with overdue detection and availability — plus a SQL quick-reference.</p>
+      <div class="tag">MySQL</div>
+      <div class="go">View code →</div>
+    </a>
+    <a class="app" href="https://github.com/Abenezer0101/projects/tree/main/sql-window-functions">
+      <div class="icon">🪟</div>
+      <h2>SQL Window Functions</h2>
+      <p>Seven worked patterns: running totals, RANK, LAG, share-of-total, NTILE, moving averages.</p>
+      <div class="tag">MySQL · SQLite</div>
+      <div class="go">View code →</div>
+    </a>
+    <a class="app" href="https://github.com/Abenezer0101/projects/tree/main/excel-kpi-analysis">
+      <div class="icon">📗</div>
+      <h2>Excel KPI Analysis</h2>
+      <p>Messy raw data → cleaned sheet → live-formula KPI dashboard on Georgia county population.</p>
+      <div class="tag">Excel · Python</div>
+      <div class="go">View code →</div>
     </a>
   </div>
 
