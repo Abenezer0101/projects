@@ -7,6 +7,7 @@ Data, analytics, and application builds.
 | [US Population & Income Correlations](./us-population-income-dashboard/) | Chart.js, JS | Interactive dashboard on state population vs. median household income — a rebuild of a CIS 2010 Tableau data-visualization project. |
 | [Instagram Database System](./instagram-database-system/) | MySQL, UML | 3NF relational schema, seed data, and analytical SQL (self-joins, correlated subqueries, window functions) for a photo-sharing platform. |
 | [Library Management Database](./library-management-db/) | MySQL | Members/books/copies/loans schema with overdue detection and availability queries, plus a SQL quick-reference. |
+| [E-commerce Analytics Database](./ecommerce-analytics-db/) | MySQL | Customers/products/orders/line-items schema with revenue, AOV, top-product, and refund-rate analytics. |
 | [Excel KPI Analysis](./excel-kpi-analysis/) | Excel, Python | Raw → cleaned → live-formula KPI dashboard on Georgia county population and ZIP codes. |
 | [Sales Ops Dashboard](./sales-ops-dashboard/) | JS | Sales operations dashboard. |
 | [Impossible Gift Machine](./gift-app/) | JS | Gift-picking app. |
