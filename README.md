@@ -11,6 +11,7 @@ Data, analytics, and application builds.
 | [SQL Window-Functions Playground](./sql-window-functions/) | MySQL | Seven worked examples — running totals, ranking, `LAG`, share-of-total, `NTILE`, moving averages. |
 | [Excel KPI Analysis](./excel-kpi-analysis/) | Excel, Python | Raw → cleaned → live-formula KPI dashboard on Georgia county population and ZIP codes. |
 | [Movie Ratings & Recommendations](./movie-ratings-db/) | MySQL | Collaborative-filtering recommendations in pure SQL from self-joined ratings. |
+| [HR & Payroll Database](./hr-payroll-db/) | MySQL | Versioned salary history, layered views, and a transactional stored procedure for raises. |
 | [Sales Ops Dashboard](./sales-ops-dashboard/) | JS | Sales operations dashboard. |
 | [Impossible Gift Machine](./gift-app/) | JS | Gift-picking app. |
 
