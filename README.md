@@ -12,6 +12,7 @@ Data, analytics, and application builds.
 | [Excel KPI Analysis](./excel-kpi-analysis/) | Excel, Python | Raw → cleaned → live-formula KPI dashboard on Georgia county population and ZIP codes. |
 | [Movie Ratings & Recommendations](./movie-ratings-db/) | MySQL | Collaborative-filtering recommendations in pure SQL from self-joined ratings. |
 | [HR & Payroll Database](./hr-payroll-db/) | MySQL | Versioned salary history, layered views, and a transactional stored procedure for raises. |
+| [Normalization Case Study](./normalization-case-study/) | SQL, Python | UNF → 1NF → 2NF → 3NF with a runnable script that reproduces each anomaly. |
 | [Sales Ops Dashboard](./sales-ops-dashboard/) | JS | Sales operations dashboard. |
 | [Impossible Gift Machine](./gift-app/) | JS | Gift-picking app. |
 
