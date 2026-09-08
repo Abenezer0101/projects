@@ -14,7 +14,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 - [x] **Day 7** — Normalization case study: a denormalized table walked 1NF → 2NF → 3NF with before/after schemas *(done)*
 
 ## Week 2 — Data Analysis & Visualization
-- [ ] **Day 8** — Time-series dashboard (Chart.js) on a real public dataset
+- [x] **Day 8** — GSU student success dashboard: enrollment & graduation-rate time series *(done)*
 - [ ] **Day 9** — Personal-finance/budget analyzer: CSV in, category charts + savings-rate KPI out
 - [ ] **Day 10** — World population vs. GDP scatter dashboard (global analogue of Day 1)
 - [ ] **Day 11** — Sales-funnel dashboard with conversion-rate KPIs
