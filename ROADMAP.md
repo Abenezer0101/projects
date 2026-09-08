@@ -10,7 +10,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 - [x] **Day 3** — E-commerce DB: orders/products/customers schema + revenue & AOV analytics queries *(done)*
 - [x] **Day 4** — SQL window-functions playground: running totals, rankings, cohort retention on a sample sales set *(done)*
 - [x] **Day 5** — Movie ratings DB: schema + "users who liked X also liked" recommendation queries *(done)*
-- [ ] **Day 6** — HR/payroll DB: tables + views + a stored procedure + headcount/payroll KPIs
+- [x] **Day 6** — HR/payroll DB: tables + views + a stored procedure + headcount/payroll KPIs *(done)*
 - [ ] **Day 7** — Normalization case study: a denormalized table walked 1NF → 2NF → 3NF with before/after schemas
 
 ## Week 2 — Data Analysis & Visualization
