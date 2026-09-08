@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GSU Student Success Trends</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    color-scheme:light;
+    --plane:#f6f7f9; --surface-1:#fcfcfb; --border:rgba(12,18,32,.12);
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#82817c;
+    --grid:rgba(12,18,32,.08);
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+    --accent:#2a78d6;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark;
+    --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --grid:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+    --accent:#3987e5;
+  }}
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --grid:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+    --accent:#3987e5;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--plane);color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+  .wrap{max-width:1060px;margin:0 auto;padding:48px 24px 72px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);font-weight:600}
+  h1{font-size:clamp(26px,5vw,38px);letter-spacing:-.02em;margin:8px 0 8px;font-weight:800}
+  .lede{color:var(--text-secondary);max-width:64ch;margin:0 0 32px}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+    gap:14px;margin-bottom:28px}
+  .tile{background:var(--surface-1);border:1px solid var(--border);
+    border-radius:14px;padding:18px 20px}
+  .tile .v{font-size:30px;font-weight:700;letter-spacing:-.02em}
+  .tile .l{font-size:12px;color:var(--text-secondary);margin-top:2px}
+  .tile .n{font-size:12px;color:var(--text-muted);margin-top:6px}
+  .card{background:var(--surface-1);border:1px solid var(--border);
+    border-radius:14px;padding:20px 22px;margin-bottom:18px}
+  .card h2{font-size:16px;margin:0 0 2px}
+  .card .sub{font-size:13px;color:var(--text-secondary);margin-bottom:16px}
+  .cwrap{position:relative;height:330px}
+  .row{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  button.toggle{background:transparent;border:1px solid var(--border);color:var(--text-secondary);
+    font:inherit;font-size:12px;padding:5px 12px;border-radius:99px;cursor:pointer}
+  button.toggle:hover{border-color:var(--accent);color:var(--accent)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:14px}
+  th,td{text-align:right;padding:7px 9px;border-bottom:1px solid var(--border)}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--text-secondary);font-weight:600}
+  .swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px}
+  .note{font-size:12px;color:var(--text-muted);margin-top:10px}
+  footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--border);
+    font-size:12px;color:var(--text-muted)}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Georgia State University · 2010–2024</div>
+  <h1>Student Success Trends</h1>
+  <p class="lede">Two things happened at Georgia State over this period: a consolidation that
+  reshaped the student body overnight, and a sustained closing of graduation-rate gaps between
+  student groups. They need separate charts — the measures share no scale.</p>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <h2>Six-year graduation rate by student group</h2>
+        <div class="sub">Percent of entering cohort graduating within six years</div>
+      </div>
+      <button class="toggle" id="tRates">Table view</button>
+    </div>
+    <div class="cwrap" id="wRates"><canvas id="cRates"></canvas></div>
+    <div id="tblRates" hidden></div>
+    <div class="note">The gap is the story: groups that began 4–5 points below the
+      overall rate now sit level with or above it.</div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <h2>Total enrollment</h2>
+        <div class="sub">Headcount, all levels — shown separately because a percentage
+          and a headcount must never share an axis</div>
+      </div>
+      <button class="toggle" id="tEnrol">Table view</button>
+    </div>
+    <div class="cwrap" id="wEnrol"><canvas id="cEnrol"></canvas></div>
+    <div id="tblEnrol" hidden></div>
+    <div class="note">The 2016 step is the Georgia Perimeter College consolidation,
+      not organic growth — a structural break, and reading it as a trend would be wrong.</div>
+  </div>
+
+  <footer>
+    Figures are illustrative approximations of publicly reported Georgia State University
+    trends, assembled for a portfolio analysis — not official institutional statistics.
+    Source data: <code>data/gsu_trends.csv</code>. Built with Chart.js.
+  </footer>
+</div>
+
+<script>
+const RAW=[
+ [2010,31200,48.0,44.0,45.0,43.0],[2011,32000,49.0,45.5,46.5,44.0],
+ [2012,32100,51.0,47.5,48.5,46.0],[2013,32400,52.0,49.0,50.0,48.0],
+ [2014,32300,53.0,50.5,51.5,50.0],[2015,32000,54.0,52.0,53.0,51.5],
+ [2016,51100,54.0,53.0,54.0,52.5],[2017,53000,55.0,54.0,55.0,54.0],
+ [2018,53200,55.0,55.0,56.0,55.0],[2019,52400,56.0,56.0,57.0,55.5],
+ [2020,54000,55.0,55.0,56.0,55.0],[2021,53100,56.0,56.0,56.5,55.5],
+ [2022,52300,54.5,55.0,55.5,54.5],[2023,52000,55.0,55.5,56.0,55.0],
+ [2024,51400,56.0,56.5,57.0,56.0]];
+
+const years=RAW.map(r=>r[0]);
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const SERIES=[
+  {key:'Overall',      idx:2, tok:'--s1'},
+  {key:'Black',        idx:3, tok:'--s2'},
+  {key:'Hispanic',     idx:4, tok:'--s3'},
+  {key:'Pell-eligible',idx:5, tok:'--s4'}];
+
+const fmt=n=>n.toLocaleString();
+const last=RAW[RAW.length-1], first=RAW[0];
+
+// ---- stat tiles ----
+const gapNow=(last[2]-last[3]), gapThen=(first[2]-first[3]);
+document.getElementById('tiles').innerHTML=[
+  ['56.0%','Overall graduation rate','2024 cohort, up 8.0 pts since 2010'],
+  ['+8.0 pts','Gain since 2010','48.0% → 56.0%'],
+  [gapNow.toFixed(1)+' pts','Overall vs. Black gap',`Was ${gapThen.toFixed(1)} pts in 2010 — now inverted`],
+  [fmt(last[1]),'Total enrollment','2024 headcount']
+].map(t=>`<div class="tile"><div class="v">${t[0]}</div><div class="l">${t[1]}</div><div class="n">${t[2]}</div></div>`).join('');
+
+// direct-label plugin: names the series at its last point (required relief
+// for the light-mode contrast warning on the aqua/yellow steps)
+const endLabels={
+  id:'endLabels',
+  afterDatasetsDraw(chart){
+    const {ctx}=chart;
+    ctx.save();
+    ctx.font='600 11px system-ui,sans-serif'; ctx.textBaseline='middle';
+    chart.data.datasets.forEach((ds,i)=>{
+      const meta=chart.getDatasetMeta(i); if(meta.hidden) return;
+      const pt=meta.data[meta.data.length-1]; if(!pt) return;
+      ctx.fillStyle=ds.borderColor;
+      ctx.fillText(ds.label, pt.x+8, pt.y);
+    });
+    ctx.restore();
+  }
+};
+
+const baseOpts=(yTitle,fmtY)=>({
+  maintainAspectRatio:false,
+  interaction:{mode:'index',intersect:false},   // crosshair-style hover
+  layout:{padding:{right:96}},
+  plugins:{
+    legend:{display:true,position:'bottom',
+      labels:{color:css('--text-secondary'),usePointStyle:true,pointStyle:'line',boxWidth:22,padding:16}},
+    tooltip:{backgroundColor:css('--surface-1'),titleColor:css('--text-primary'),
+      bodyColor:css('--text-secondary'),borderColor:css('--border'),borderWidth:1,
+      padding:10,usePointStyle:true,
+      callbacks:{label:c=>` ${c.dataset.label}: ${fmtY(c.parsed.y)}`}}
+  },
+  scales:{
+    x:{grid:{display:false},ticks:{color:css('--text-secondary')},
+       border:{color:css('--grid')}},
+    y:{title:{display:true,text:yTitle,color:css('--text-secondary')},
+       grid:{color:css('--grid')},border:{display:false},
+       ticks:{color:css('--text-secondary'),callback:fmtY}}
+  }
+});
+
+// ---- chart 1: graduation rates (4 series) ----
+const rates=new Chart(document.getElementById('cRates'),{
+  type:'line',
+  data:{labels:years,datasets:SERIES.map(s=>({
+    label:s.key,
+    data:RAW.map(r=>r[s.idx]),
+    borderColor:css(s.tok),
+    backgroundColor:css(s.tok),
+    borderWidth:2, pointRadius:0, pointHoverRadius:5,
+    pointHoverBorderColor:css('--surface-1'), pointHoverBorderWidth:2,
+    tension:.25
+  }))},
+  options:{...baseOpts('Graduation rate',v=>v+'%'),
+    scales:{...baseOpts('Graduation rate',v=>v+'%').scales,
+      y:{...baseOpts('Graduation rate',v=>v+'%').scales.y,suggestedMin:40,suggestedMax:60}}},
+  plugins:[endLabels]
+});
+
+// ---- chart 2: enrollment (single series -> no legend) ----
+const enrol=new Chart(document.getElementById('cEnrol'),{
+  type:'line',
+  data:{labels:years,datasets:[{
+    label:'Total enrollment',
+    data:RAW.map(r=>r[1]),
+    borderColor:css('--s1'), backgroundColor:'transparent',
+    borderWidth:2, pointRadius:0, pointHoverRadius:5,
+    pointHoverBorderColor:css('--surface-1'), pointHoverBorderWidth:2,
+    tension:.15
+  }]},
+  options:(()=>{const o=baseOpts('Students',v=>(v/1000).toFixed(0)+'k');
+    o.plugins.legend.display=false;      // one series: the title names it
+    o.layout.padding.right=16;
+    return o;})()
+});
+
+// ---- table views (required relief for the contrast warning) ----
+function buildTable(el,cols,rows){
+  el.innerHTML='<table><thead><tr>'+cols.map(c=>`<th>${c}</th>`).join('')+
+    '</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>`<td>${c}</td>`).join('')+'</tr>').join('')+
+    '</tbody></table>';
+}
+buildTable(document.getElementById('tblRates'),
+  ['Year',...SERIES.map(s=>`<span class="swatch" style="background:${css(s.tok)}"></span>${s.key}`)],
+  RAW.map(r=>[r[0],...SERIES.map(s=>r[s.idx].toFixed(1)+'%')]));
+buildTable(document.getElementById('tblEnrol'),['Year','Total enrollment'],
+  RAW.map(r=>[r[0],fmt(r[1])]));
+
+function wireToggle(btnId,chartWrapId,tableId){
+  const b=document.getElementById(btnId),w=document.getElementById(chartWrapId),t=document.getElementById(tableId);
+  b.onclick=()=>{const showTable=w.hidden===false;
+    w.hidden=showTable; t.hidden=!showTable;
+    b.textContent=showTable?'Chart view':'Table view';};
+}
+wireToggle('tRates','wRates','tblRates');
+wireToggle('tEnrol','wEnrol','tblEnrol');
+</script>
+</body>
+</html>
