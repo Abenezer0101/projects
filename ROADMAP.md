@@ -15,7 +15,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 
 ## Week 2 — Data Analysis & Visualization
 - [x] **Day 8** — GSU student success dashboard: enrollment & graduation-rate time series *(done)*
-- [ ] **Day 9** — Personal-finance/budget analyzer: CSV in, category charts + savings-rate KPI out
+- [x] **Day 9** — Personal-finance/budget analyzer: CSV in, category charts + savings-rate KPI out *(done)*
 - [ ] **Day 10** — World population vs. GDP scatter dashboard (global analogue of Day 1)
 - [ ] **Day 11** — Sales-funnel dashboard with conversion-rate KPIs
 - [ ] **Day 12** — Excel financial model: loan amortization / ROI workbook with live formulas
