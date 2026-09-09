@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Budget Analyzer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="data/sample.js"></script>
+<style>
+  :root{
+    color-scheme:light;
+    --plane:#f6f7f9; --surface-1:#fcfcfb; --border:rgba(12,18,32,.12);
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#82817c;
+    --grid:rgba(12,18,32,.08);
+    --s1:#2a78d6; --s2:#eb6834; --good:#1baf7a; --bad:#e34948;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark;
+    --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --grid:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --good:#199e70; --bad:#e66767;
+  }}
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --grid:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --good:#199e70; --bad:#e66767;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--plane);color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+  .wrap{max-width:1040px;margin:0 auto;padding:44px 22px 70px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--s1);font-weight:600}
+  h1{font-size:clamp(26px,5vw,36px);letter-spacing:-.02em;margin:8px 0;font-weight:800}
+  .lede{color:var(--text-secondary);max-width:62ch;margin:0 0 26px}
+  .drop{border:1.5px dashed var(--border);border-radius:14px;padding:20px;
+    text-align:center;color:var(--text-secondary);font-size:14px;margin-bottom:24px;
+    background:var(--surface-1);transition:border-color .15s}
+  .drop.over{border-color:var(--s1);color:var(--s1)}
+  .drop input{display:none}
+  .drop label{color:var(--s1);font-weight:600;cursor:pointer;text-decoration:underline}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:13px;margin-bottom:24px}
+  .tile{background:var(--surface-1);border:1px solid var(--border);border-radius:13px;padding:16px 18px}
+  .tile .v{font-size:27px;font-weight:700;letter-spacing:-.02em}
+  .tile .l{font-size:12px;color:var(--text-secondary);margin-top:2px}
+  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:13px;
+    padding:18px 20px;margin-bottom:16px}
+  .card h2{font-size:15px;margin:0 0 2px} .card .sub{font-size:12.5px;color:var(--text-secondary);margin-bottom:14px}
+  .cwrap{position:relative;height:300px}
+  .row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+  button.toggle{background:transparent;border:1px solid var(--border);color:var(--text-secondary);
+    font:inherit;font-size:12px;padding:5px 12px;border-radius:99px;cursor:pointer}
+  button.toggle:hover{border-color:var(--s1);color:var(--s1)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+  th,td{text-align:right;padding:7px 9px;border-bottom:1px solid var(--border)}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--text-secondary);font-weight:600}
+  .note{font-size:12px;color:var(--text-muted);margin-top:9px}
+  footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);
+    font-size:12px;color:var(--text-muted)}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">CSV in · KPIs out</div>
+  <h1>Budget Analyzer</h1>
+  <p class="lede">Drop a bank-export CSV with <code>date,description,amount</code> columns.
+  Transactions are categorized by merchant keyword, then summarized into a savings rate,
+  category breakdown, and month-by-month cash flow. Everything runs in your browser —
+  no file ever leaves the page.</p>
+
+  <div class="drop" id="drop">
+    <strong id="dropTitle">Sample data loaded</strong> —
+    <label for="file">choose a CSV</label> or drag one here
+    <input type="file" id="file" accept=".csv,text/csv">
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="card">
+    <div class="row">
+      <div><h2>Spending by category</h2>
+        <div class="sub">One measure across categories — a single hue, ordered by size</div></div>
+      <button class="toggle" id="tCat">Table view</button>
+    </div>
+    <div class="cwrap" id="wCat"><canvas id="cCat"></canvas></div>
+    <div id="tblCat" hidden></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div><h2>Monthly income vs. spending</h2>
+        <div class="sub">Both in dollars, so they share one axis honestly</div></div>
+      <button class="toggle" id="tMon">Table view</button>
+    </div>
+    <div class="cwrap" id="wMon"><canvas id="cMon"></canvas></div>
+    <div id="tblMon" hidden></div>
+  </div>
+
+  <div class="card">
+    <h2>Savings rate by month</h2>
+    <div class="sub">A percentage — its own chart, never sharing an axis with dollars</div>
+    <div class="cwrap" id="wRate"><canvas id="cRate"></canvas></div>
+    <div class="note" id="rateNote"></div>
+  </div>
+
+  <footer>
+    Sample data is synthetic, generated by <code>generate_data.py</code>.
+    Categorization rules mirror <code>analyze.py</code>, the reference implementation.
+  </footer>
+</div>
+
+<script>
+// Keep these rules identical to analyze.py — first match wins.
+const RULES=[["paycheck","Income"],["apartments","Housing"],["power","Utilities"],
+ ["xfinity","Utilities"],["t-mobile","Utilities"],["fitness","Health"],["cvs","Health"],
+ ["clinic","Health"],["spotify","Subscriptions"],["netflix","Subscriptions"],
+ ["insurance","Insurance"],["marta","Transport"],["shell","Transport"],["delta","Travel"],
+ ["kroger","Groceries"],["publix","Groceries"],["chipotle","Dining"],["starbucks","Dining"],
+ ["waffle","Dining"],["amazon","Shopping"],["target","Shopping"],["amc","Entertainment"],
+ ["steam","Entertainment"]];
+const categorize=d=>{const s=d.toLowerCase();
+  for(const [kw,cat] of RULES) if(s.includes(kw)) return cat;
+  return "Uncategorized";};
+
+// Minimal CSV parser — handles quoted fields; no CDN dependency.
+function parseCSV(text){
+  const rows=[]; let row=[], cur='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){ row.push(cur); cur=''; }
+    else if(c==='\n'||c==='\r'){ if(cur!==''||row.length){row.push(cur);rows.push(row);row=[];cur='';}
+      if(c==='\r'&&text[i+1]==='\n') i++; }
+    else cur+=c;
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  const head=rows.shift().map(h=>h.trim().toLowerCase());
+  return rows.filter(r=>r.length===head.length)
+             .map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]])));
+}
+
+function analyze(rows){
+  let income=0,expense=0,uncategorized=0;
+  const byCat={}, byMonth={};
+  for(const r of rows){
+    const amt=parseFloat(r.amount); if(!isFinite(amt)) continue;
+    const cat=categorize(r.description||''), month=(r.date||'').slice(0,7);
+    if(cat==='Uncategorized') uncategorized++;
+    byMonth[month] ??= {income:0,expense:0};
+    if(amt>0){ income+=amt; byMonth[month].income+=amt; }
+    else { expense+=-amt; byCat[cat]=(byCat[cat]||0)+(-amt); byMonth[month].expense+=-amt; }
+  }
+  const net=income-expense;
+  return {n:rows.length,uncategorized,income,expense,net,
+    savings_rate: income? 100*net/income : 0,
+    byCat:Object.entries(byCat).sort((a,b)=>b[1]-a[1]),
+    byMonth:Object.entries(byMonth).sort((a,b)=>a[0].localeCompare(b[0]))};
+}
+
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const usd=n=>'$'+n.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0});
+let charts={};
+
+function render(a){
+  window.__analysis=a;   // exposed for verification
+  document.getElementById('tiles').innerHTML=[
+    [usd(a.income),'Total income'],
+    [usd(a.expense),'Total spending'],
+    [usd(a.net),'Net saved'],
+    [a.savings_rate.toFixed(1)+'%','Savings rate']
+  ].map(t=>`<div class="tile"><div class="v">${t[0]}</div><div class="l">${t[1]}</div></div>`).join('');
+
+  const tip=()=>({backgroundColor:css('--surface-1'),titleColor:css('--text-primary'),
+    bodyColor:css('--text-secondary'),borderColor:css('--border'),borderWidth:1,padding:9});
+
+  // 1. category — ONE measure across categories, so one hue (not a rainbow)
+  charts.cat?.destroy();
+  charts.cat=new Chart(cCat,{type:'bar',
+    data:{labels:a.byCat.map(c=>c[0]),
+      datasets:[{data:a.byCat.map(c=>c[1]),backgroundColor:css('--s1'),
+        borderRadius:4,borderSkipped:false}]},
+    options:{maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{...tip(),
+        callbacks:{label:c=>` ${usd(c.raw)} · ${(100*c.raw/a.expense).toFixed(1)}% of spend`}}},
+      scales:{x:{grid:{color:css('--grid')},border:{display:false},
+          ticks:{color:css('--text-secondary'),callback:v=>usd(v)}},
+        y:{grid:{display:false},ticks:{color:css('--text-secondary')}}}}});
+
+  // 2. income vs spending — same unit, one axis is legitimate here
+  charts.mon?.destroy();
+  charts.mon=new Chart(cMon,{type:'bar',
+    data:{labels:a.byMonth.map(m=>m[0].slice(5)),
+      datasets:[
+        {label:'Income',  data:a.byMonth.map(m=>m[1].income), backgroundColor:css('--s1'),borderRadius:3},
+        {label:'Spending',data:a.byMonth.map(m=>m[1].expense),backgroundColor:css('--s2'),borderRadius:3}]},
+    options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom',labels:{color:css('--text-secondary'),usePointStyle:true,boxWidth:9,padding:14}},
+        tooltip:{...tip(),callbacks:{label:c=>` ${c.dataset.label}: ${usd(c.raw)}`}}},
+      scales:{y:{grid:{color:css('--grid')},border:{display:false},
+          ticks:{color:css('--text-secondary'),callback:v=>usd(v)}},
+        x:{grid:{display:false},ticks:{color:css('--text-secondary')}}}}});
+
+  // 3. savings rate — a percentage, kept on its own chart
+  const rates=a.byMonth.map(m=>m[1].income? 100*(m[1].income-m[1].expense)/m[1].income : 0);
+  charts.rate?.destroy();
+  charts.rate=new Chart(cRate,{type:'line',
+    data:{labels:a.byMonth.map(m=>m[0].slice(5)),
+      datasets:[{data:rates,borderColor:css('--good'),borderWidth:2,
+        pointRadius:0,pointHoverRadius:5,pointHoverBorderColor:css('--surface-1'),
+        pointHoverBorderWidth:2,tension:.25}]},
+    options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},
+        tooltip:{...tip(),callbacks:{label:c=>` savings rate ${c.parsed.y.toFixed(1)}%`}}},
+      scales:{y:{grid:{color:css('--grid')},border:{display:false},
+          ticks:{color:css('--text-secondary'),callback:v=>v.toFixed(0)+'%'}},
+        x:{grid:{display:false},ticks:{color:css('--text-secondary')}}}}});
+
+  const best=rates.indexOf(Math.max(...rates)), worst=rates.indexOf(Math.min(...rates));
+  document.getElementById('rateNote').textContent=
+    `Best ${a.byMonth[best][0]} at ${rates[best].toFixed(1)}% · weakest ${a.byMonth[worst][0]} at ${rates[worst].toFixed(1)}%`
+    + (a.uncategorized? ` · ${a.uncategorized} transactions uncategorized` : '');
+
+  buildTable('tblCat',['Category','Amount','% of spend'],
+    a.byCat.map(c=>[c[0],usd(c[1]),(100*c[1]/a.expense).toFixed(1)+'%']));
+  buildTable('tblMon',['Month','Income','Spending','Net'],
+    a.byMonth.map(m=>[m[0],usd(m[1].income),usd(m[1].expense),usd(m[1].income-m[1].expense)]));
+}
+
+function buildTable(id,cols,rows){
+  document.getElementById(id).innerHTML='<table><thead><tr>'+
+    cols.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+
+    rows.map(r=>'<tr>'+r.map(c=>`<td>${c}</td>`).join('')+'</tr>').join('')+'</tbody></table>';
+}
+function wire(btn,wrap,tbl){
+  const b=document.getElementById(btn),w=document.getElementById(wrap),t=document.getElementById(tbl);
+  b.onclick=()=>{const showing=w.hidden===false; w.hidden=showing; t.hidden=!showing;
+    b.textContent=showing?'Chart view':'Table view';};
+}
+wire('tCat','wCat','tblCat'); wire('tMon','wMon','tblMon');
+
+function load(text,label){
+  const rows=parseCSV(text);
+  if(!rows.length||!('amount' in rows[0])||!('date' in rows[0])){
+    document.getElementById('dropTitle').textContent='Could not read that file — needs date, description, amount columns';
+    return;
+  }
+  document.getElementById('dropTitle').textContent=label;
+  render(analyze(rows));
+}
+
+const drop=document.getElementById('drop'), fileIn=document.getElementById('file');
+fileIn.onchange=e=>{const f=e.target.files[0]; if(!f) return;
+  f.text().then(t=>load(t,`${f.name} loaded`));};
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];
+  if(f) f.text().then(t=>load(t,`${f.name} loaded`));});
+
+// Load the bundled sample. A <script> tag is used rather than fetch()
+// because browsers block fetch on file:// — this keeps the page working
+// when opened straight from disk, not just when served over http.
+if(window.SAMPLE_CSV) load(window.SAMPLE_CSV,'Sample data loaded');
+else document.getElementById('dropTitle').textContent='Choose a CSV to begin';
+</script>
+</body>
+</html>

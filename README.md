@@ -14,6 +14,7 @@ Data, analytics, and application builds.
 | [HR & Payroll Database](./hr-payroll-db/) | MySQL | Versioned salary history, layered views, and a transactional stored procedure for raises. |
 | [Normalization Case Study](./normalization-case-study/) | SQL, Python | UNF → 1NF → 2NF → 3NF with a runnable script that reproduces each anomaly. |
 | [GSU Student Success Trends](./gsu-student-success-dashboard/) | Chart.js, JS | Enrollment and graduation-rate time series with a validated, CVD-safe palette. |
+| [Budget Analyzer](./budget-analyzer/) | JS, Python | CSV in, savings-rate KPIs out; JS verified against a Python reference implementation. |
 | [Sales Ops Dashboard](./sales-ops-dashboard/) | JS | Sales operations dashboard. |
 | [Impossible Gift Machine](./gift-app/) | JS | Gift-picking app. |
 
