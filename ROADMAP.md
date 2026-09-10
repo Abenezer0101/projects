@@ -18,7 +18,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 - [x] **Day 9** — Personal-finance/budget analyzer: CSV in, category charts + savings-rate KPI out *(done)*
 - [x] **Day 10** — World population vs. GDP scatter dashboard (global analogue of Day 1) *(done)*
 - [x] **Day 11** — Sales-funnel dashboard with conversion-rate KPIs *(done)*
-- [ ] **Day 12** — Excel financial model: loan amortization / ROI workbook with live formulas
+- [x] **Day 12** — Excel financial model: loan amortization / ROI workbook with live formulas *(done)*
 - [ ] **Day 13** — Python data-analysis script: clean a messy dataset, output static matplotlib charts + findings
 - [ ] **Day 14** — Interactive US choropleth (population by state), inline SVG + JS
 
