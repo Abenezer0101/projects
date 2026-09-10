@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Population and GDP</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="data/countries.js"></script>
+<style>
+  :root{
+    color-scheme:light;
+    --plane:#f6f7f9; --surface-1:#fcfcfb; --border:rgba(12,18,32,.12);
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#82817c;
+    --grid:rgba(12,18,32,.08); --s1:#2a78d6; --s2:#eb6834;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark; --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --grid:rgba(255,255,255,.10); --s1:#3987e5; --s2:#d95926;
+  }}
+  :root[data-theme="dark"]{
+    color-scheme:dark; --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --grid:rgba(255,255,255,.10); --s1:#3987e5; --s2:#d95926;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--plane);color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+  .wrap{max-width:1050px;margin:0 auto;padding:44px 22px 70px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--s1);font-weight:600}
+  h1{font-size:clamp(26px,5vw,36px);letter-spacing:-.02em;margin:8px 0;font-weight:800}
+  .lede{color:var(--text-secondary);max-width:64ch;margin:0 0 24px}
+  .filters{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+  .filters span{font-size:12px;color:var(--text-secondary);margin-right:3px}
+  .chip{cursor:pointer;border:1px solid var(--border);background:var(--surface-1);
+    color:var(--text-secondary);padding:5px 13px;border-radius:99px;font-size:12.5px}
+  .chip.active{background:var(--s1);border-color:var(--s1);color:#fff}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:13px;margin-bottom:22px}
+  .tile{background:var(--surface-1);border:1px solid var(--border);border-radius:13px;padding:16px 18px}
+  .tile .v{font-size:26px;font-weight:700;letter-spacing:-.02em}
+  .tile .l{font-size:12px;color:var(--text-secondary);margin-top:2px}
+  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:13px;
+    padding:18px 20px;margin-bottom:16px}
+  .card h2{font-size:15px;margin:0 0 2px}
+  .card .sub{font-size:12.5px;color:var(--text-secondary);margin-bottom:14px}
+  .cwrap{position:relative;height:340px}
+  .row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+  button.toggle{background:transparent;border:1px solid var(--border);color:var(--text-secondary);
+    font:inherit;font-size:12px;padding:5px 12px;border-radius:99px;cursor:pointer}
+  button.toggle:hover{border-color:var(--s1);color:var(--s1)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+  th,td{text-align:right;padding:6px 9px;border-bottom:1px solid var(--border)}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--text-secondary);font-weight:600;cursor:pointer;user-select:none}
+  .caveat{background:var(--surface-1);border:1px solid var(--border);border-left:3px solid var(--s2);
+    border-radius:0 13px 13px 0;padding:16px 20px;margin-bottom:16px}
+  .caveat h3{font-size:13px;margin:0 0 8px;letter-spacing:.04em;text-transform:uppercase;color:var(--s2)}
+  .caveat p{margin:0 0 8px;font-size:13.5px;color:var(--text-secondary)}
+  .caveat p:last-child{margin:0}
+  footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);
+    font-size:12px;color:var(--text-muted)}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">54 countries · population &amp; output</div>
+  <h1>Does a bigger country mean a richer one?</h1>
+  <p class="lede">Two scatters answer it. Total output rises with population, as you'd expect —
+  more people produce more. Output <em>per person</em> does not. Both axes are logarithmic,
+  because population and GDP each span four orders of magnitude.</p>
+
+  <div class="filters" id="filters"><span>Region</span></div>
+  <div class="tiles" id="tiles"></div>
+
+  <div class="card">
+    <div class="row">
+      <div><h2>Population vs. GDP per capita</h2>
+        <div class="sub">The question that matters — and the relationship is not positive</div></div>
+    </div>
+    <div class="cwrap"><canvas id="cPc"></canvas></div>
+  </div>
+
+  <div class="card">
+    <h2>Population vs. total GDP</h2>
+    <div class="sub">The expected relationship: more people, more total output</div>
+    <div class="cwrap"><canvas id="cGdp"></canvas></div>
+  </div>
+
+  <div class="caveat">
+    <h3>Read this before quoting the number</h3>
+    <p><strong>Correlation is not causation, and the negative sign is not "big countries make people poor."</strong>
+    The pattern is driven by which countries sit at the extremes: small, wealthy financial and
+    resource economies (Ireland, Switzerland, Norway, Singapore) at one end, and large,
+    low-income countries (DR Congo, Ethiopia, Afghanistan) at the other.</p>
+    <p><strong>Ireland's figure is a known artifact.</strong> Multinational profit-shifting inflates
+    Irish GDP well beyond domestic activity; Ireland's own statistics office publishes GNI* precisely
+    because GDP overstates it. It leads this chart for accounting reasons, not living standards.</p>
+    <p><strong>This is 54 countries, not all ~195.</strong> The sample skews toward large and
+    well-documented economies, so these coefficients describe this sample — not the world.</p>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div><h2>Country detail</h2><div class="sub">Click a column to sort</div></div>
+      <button class="toggle" id="tTbl">Hide table</button>
+    </div>
+    <div id="tblWrap"><table id="tbl"><thead><tr>
+      <th data-k="country">Country</th><th data-k="region">Region</th>
+      <th data-k="pop">Population (M)</th><th data-k="gdp">GDP ($B)</th>
+      <th data-k="pc">GDP per capita</th></tr></thead><tbody></tbody></table></div>
+  </div>
+
+  <footer>
+    Population and nominal GDP are illustrative approximations of recent published figures,
+    assembled for a portfolio analysis — not an official dataset. Source:
+    <code>data/countries.csv</code>; correlations verified by <code>analyze.py</code>.
+  </footer>
+</div>
+
+<script>
+const ROWS = window.COUNTRIES.map(c => ({...c, pc: c.gdp*1e9/(c.pop*1e6)}));
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const REGIONS = [...new Set(ROWS.map(r=>r.region))].sort();
+let region = 'All', sortK = 'pc', sortDir = -1, charts = {};
+
+const view = () => region==='All' ? ROWS : ROWS.filter(r=>r.region===region);
+const log10 = Math.log10;
+function pearson(xs, ys){
+  const n=xs.length, mx=xs.reduce((a,b)=>a+b,0)/n, my=ys.reduce((a,b)=>a+b,0)/n;
+  let sxy=0,sx=0,sy=0;
+  for(let i=0;i<n;i++){const dx=xs[i]-mx, dy=ys[i]-my; sxy+=dx*dy; sx+=dx*dx; sy+=dy*dy;}
+  return sxy/Math.sqrt(sx*sy);
+}
+const money = n => n>=1000 ? '$'+(n/1000).toFixed(1)+'k' : '$'+Math.round(n);
+
+function render(){
+  const v = view();
+  const pop=v.map(r=>r.pop), gdp=v.map(r=>r.gdp), pc=v.map(r=>r.pc);
+  const rGdp = v.length>2 ? pearson(pop.map(log10), gdp.map(log10)) : NaN;
+  const rPc  = v.length>2 ? pearson(pop.map(log10), pc.map(log10))  : NaN;
+  window.__stats = {n:v.length, rGdp, rPc,
+    totalPop:pop.reduce((a,b)=>a+b,0), totalGdp:gdp.reduce((a,b)=>a+b,0)};
+
+  document.getElementById('tiles').innerHTML = [
+    [v.length, 'Countries in view'],
+    [(pop.reduce((a,b)=>a+b,0)/1000).toFixed(2)+'B', 'Total population'],
+    ['$'+(gdp.reduce((a,b)=>a+b,0)/1000).toFixed(1)+'T', 'Combined GDP'],
+    [isNaN(rPc)?'—':rPc.toFixed(2), 'Population ↔ GDP per capita (r)']
+  ].map(t=>`<div class="tile"><div class="v">${t[0]}</div><div class="l">${t[1]}</div></div>`).join('');
+
+  scatter('cPc', charts.pc, v.map(r=>({x:r.pop,y:r.pc,c:r.country})),
+    'GDP per capita (log)', y=>money(y), c=>`${c.raw.c}: ${money(c.raw.y)} per person`,
+    k=>charts.pc=k);
+  scatter('cGdp', charts.gdp, v.map(r=>({x:r.pop,y:r.gdp,c:r.country})),
+    'Total GDP, $B (log)', y=>'$'+(y>=1000?(y/1000)+'T':y+'B'),
+    c=>`${c.raw.c}: $${c.raw.y.toLocaleString()}B`, k=>charts.gdp=k);
+
+  drawTable();
+}
+
+function scatter(id, old, data, yTitle, yFmt, tipFmt, keep){
+  old?.destroy();
+  keep(new Chart(document.getElementById(id), {
+    type:'scatter',
+    data:{datasets:[{data, backgroundColor:css('--s1')+'cc', borderColor:css('--s1'),
+      pointRadius:5, pointHoverRadius:8,
+      pointHoverBorderColor:css('--surface-1'), pointHoverBorderWidth:2}]},
+    options:{maintainAspectRatio:false,
+      plugins:{legend:{display:false},                 // one series: no legend
+        tooltip:{backgroundColor:css('--surface-1'),titleColor:css('--text-primary'),
+          bodyColor:css('--text-secondary'),borderColor:css('--border'),borderWidth:1,padding:9,
+          callbacks:{title:()=>'', label:tipFmt}}},
+      scales:{
+        x:{type:'logarithmic',title:{display:true,text:'Population, millions (log)',color:css('--text-secondary')},
+           grid:{color:css('--grid')},border:{display:false},
+           ticks:{color:css('--text-secondary'),callback:v=>v>=1000?(v/1000)+'B':v+'M'}},
+        y:{type:'logarithmic',title:{display:true,text:yTitle,color:css('--text-secondary')},
+           grid:{color:css('--grid')},border:{display:false},
+           ticks:{color:css('--text-secondary'),callback:yFmt}}}}
+  }));
+}
+
+function drawTable(){
+  const v=[...view()].sort((a,b)=>{
+    const A=a[sortK],B=b[sortK];
+    return (typeof A==='number' ? A-B : String(A).localeCompare(B))*sortDir;});
+  document.querySelector('#tbl tbody').innerHTML = v.map(r=>`<tr>
+    <td>${r.country}</td><td>${r.region}</td>
+    <td>${r.pop.toLocaleString()}</td><td>${r.gdp.toLocaleString()}</td>
+    <td>${money(r.pc)}</td></tr>`).join('');
+}
+
+const fr=document.getElementById('filters');
+['All',...REGIONS].forEach(rg=>{
+  const c=document.createElement('div');
+  c.className='chip'+(rg==='All'?' active':''); c.textContent=rg;
+  c.onclick=()=>{region=rg;[...fr.querySelectorAll('.chip')].forEach(x=>x.classList.remove('active'));
+    c.classList.add('active'); render();};
+  fr.appendChild(c);
+});
+document.querySelectorAll('#tbl th').forEach(th=>th.onclick=()=>{
+  const k=th.dataset.k; sortDir = sortK===k ? -sortDir : -1; sortK=k; drawTable();});
+document.getElementById('tTbl').onclick=e=>{
+  const w=document.getElementById('tblWrap'); w.hidden=!w.hidden;
+  e.target.textContent = w.hidden ? 'Show table' : 'Hide table';};
+
+render();
+</script>
+</body>
+</html>
