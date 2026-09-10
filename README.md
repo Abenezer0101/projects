@@ -17,6 +17,7 @@ Data, analytics, and application builds.
 | [Budget Analyzer](./budget-analyzer/) | JS, Python | CSV in, savings-rate KPIs out; JS verified against a Python reference implementation. |
 | [Population & GDP](./world-population-gdp/) | Chart.js, Python | Log-log scatters over 54 countries; population predicts total output but not output per person. |
 | [Sales Funnel & Conversion](./sales-funnel-dashboard/) | Chart.js, Python | Funnel stages, step conversion, and channel efficiency across six months. |
+| [Loan & ROI Model](./loan-roi-model/) | Excel, Python | Live-formula amortization workbook with a prepay-vs-invest comparison. |
 | [Sales Ops Dashboard](./sales-ops-dashboard/) | JS | Sales operations dashboard. |
 | [Impossible Gift Machine](./gift-app/) | JS | Gift-picking app. |
 
