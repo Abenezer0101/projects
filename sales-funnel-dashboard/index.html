@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales Funnel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="data/funnel.js"></script>
+<style>
+  :root{
+    color-scheme:light;
+    --plane:#f6f7f9; --surface-1:#fcfcfb; --border:rgba(12,18,32,.12);
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#82817c;
+    --grid:rgba(12,18,32,.08); --s1:#2a78d6; --s2:#eb6834;
+    /* ordinal ramp, validated light->dark for ordered funnel stages */
+    --o1:#86b6ef; --o2:#5598e7; --o3:#2a78d6; --o4:#1c5cab; --o5:#104281;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark; --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --grid:rgba(255,255,255,.10); --s1:#3987e5; --s2:#d95926;
+    --o1:#cde2fb; --o2:#9ec5f4; --o3:#6da7ec; --o4:#2a78d6; --o5:#184f95;
+  }}
+  :root[data-theme="dark"]{
+    color-scheme:dark; --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --grid:rgba(255,255,255,.10); --s1:#3987e5; --s2:#d95926;
+    --o1:#cde2fb; --o2:#9ec5f4; --o3:#6da7ec; --o4:#2a78d6; --o5:#184f95;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--plane);color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+  .wrap{max-width:1040px;margin:0 auto;padding:44px 22px 70px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--s1);font-weight:600}
+  h1{font-size:clamp(26px,5vw,36px);letter-spacing:-.02em;margin:8px 0;font-weight:800}
+  .lede{color:var(--text-secondary);max-width:64ch;margin:0 0 22px}
+  .filters{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+  .filters span{font-size:12px;color:var(--text-secondary);margin-right:3px}
+  .chip{cursor:pointer;border:1px solid var(--border);background:var(--surface-1);
+    color:var(--text-secondary);padding:5px 13px;border-radius:99px;font-size:12.5px}
+  .chip.active{background:var(--s1);border-color:var(--s1);color:#fff}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:13px;margin-bottom:22px}
+  .tile{background:var(--surface-1);border:1px solid var(--border);border-radius:13px;padding:16px 18px}
+  .tile .v{font-size:26px;font-weight:700;letter-spacing:-.02em}
+  .tile .l{font-size:12px;color:var(--text-secondary);margin-top:2px}
+  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:13px;
+    padding:18px 20px;margin-bottom:16px}
+  .card h2{font-size:15px;margin:0 0 2px}
+  .card .sub{font-size:12.5px;color:var(--text-secondary);margin-bottom:14px}
+  .cwrap{position:relative;height:300px}
+  .insight{background:var(--surface-1);border:1px solid var(--border);
+    border-left:3px solid var(--s2);border-radius:0 13px 13px 0;padding:16px 20px;margin-bottom:16px}
+  .insight h3{font-size:13px;margin:0 0 8px;letter-spacing:.04em;text-transform:uppercase;color:var(--s2)}
+  .insight p{margin:0 0 8px;font-size:13.5px;color:var(--text-secondary)}
+  .insight p:last-child{margin:0}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+  th,td{text-align:right;padding:7px 9px;border-bottom:1px solid var(--border)}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--text-secondary);font-weight:600}
+  footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);
+    font-size:12px;color:var(--text-muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">6 months · 4 channels</div>
+  <h1>Sales Funnel &amp; Conversion</h1>
+  <p class="lede">Where prospects are lost between a first visit and a signed deal — and which
+  acquisition channel actually pays. Stages are drawn as bars, not a tapering funnel shape,
+  because a trapezoid encodes magnitude in area and misreads by design.</p>
+
+  <div class="filters" id="filters"><span>Channel</span></div>
+  <div class="tiles" id="tiles"></div>
+
+  <div class="card">
+    <h2>Funnel stages</h2>
+    <div class="sub">Absolute counts, ordered — an ordinal ramp, one hue light to dark</div>
+    <div class="cwrap"><canvas id="cFunnel"></canvas></div>
+  </div>
+
+  <div class="card">
+    <h2>Step-to-step conversion</h2>
+    <div class="sub">Each stage as a percentage of the one before it</div>
+    <div class="cwrap"><canvas id="cSteps"></canvas></div>
+  </div>
+
+  <div class="card">
+    <h2>Traffic share vs. revenue share by channel</h2>
+    <div class="sub">Both percentages of the whole, so one axis is honest</div>
+    <div class="cwrap"><canvas id="cChan"></canvas></div>
+  </div>
+
+  <div class="insight">
+    <h3>What the numbers actually say</h3>
+    <p><strong>The biggest drop is at the top, and that is not a finding.</strong>
+    Visitors → Leads converts at 7.59%, far below every later step. Every funnel looks like
+    this: the top stage is the least qualified population. Calling it "the problem" is a
+    beginner's read. The mid-funnel steps — 36% and 39% — are where a real comparison lives.</p>
+    <p><strong>The finding is channel mix.</strong> Referral converts visitor-to-won at 1.117%,
+    <strong>5.7× Paid Search</strong> (0.196%), and closes the largest deals ($6,000 average
+    against $4,923). Yet Referral receives 8.1% of traffic while producing 31.6% of revenue;
+    Paid Search takes 47.0% of traffic to produce 26.6%.</p>
+    <p>The spend is pointed at the weaker channel. That is an argument for shifting budget —
+    though referral traffic is rarely elastic to spend the way paid search is, which is exactly
+    the caveat a dashboard should not hide.</p>
+  </div>
+
+  <div class="card">
+    <h2>Channel detail</h2>
+    <div class="sub">Full funnel by channel</div>
+    <div id="tblChan"></div>
+  </div>
+
+  <footer>
+    Synthetic pipeline data for a portfolio analysis — six months, four channels.
+    Source: <code>data/funnel.csv</code>; figures verified by <code>analyze.py</code>.
+  </footer>
+</div>
+
+<script>
+const STAGES=['visitors','leads','qualified','opportunity','closed_won'];
+const LABELS=['Visitors','Leads','Qualified','Opportunity','Closed Won'];
+const ROWS=window.FUNNEL;
+const CHANNELS=[...new Set(ROWS.map(r=>r.channel))].sort();
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+let channel='All', charts={};
+
+const view=()=>channel==='All'?ROWS:ROWS.filter(r=>r.channel===channel);
+function totals(rows){
+  const t={revenue_usd:0}; STAGES.forEach(s=>t[s]=0);
+  rows.forEach(r=>Object.keys(t).forEach(k=>t[k]+=r[k]));
+  return t;
+}
+const stepRates=t=>STAGES.slice(0,-1).map((s,i)=>100*t[STAGES[i+1]]/t[s]);
+const usd=n=>'$'+Math.round(n).toLocaleString();
+
+function render(){
+  const rows=view(), t=totals(rows), rates=stepRates(t);
+  const overall=100*t.closed_won/t.visitors;
+  window.__stats={n:rows.length,totals:STAGES.map(s=>t[s]),rates,overall,
+    revenue:t.revenue_usd,acv:t.revenue_usd/t.closed_won};
+
+  document.getElementById('tiles').innerHTML=[
+    [t.visitors.toLocaleString(),'Visitors'],
+    [t.closed_won.toLocaleString(),'Deals won'],
+    [overall.toFixed(3)+'%','Visitor → won'],
+    [usd(t.revenue_usd/t.closed_won),'Average deal size'],
+    [usd(t.revenue_usd),'Revenue']
+  ].map(x=>`<div class="tile"><div class="v">${x[0]}</div><div class="l">${x[1]}</div></div>`).join('');
+
+  const tip=()=>({backgroundColor:css('--surface-1'),titleColor:css('--text-primary'),
+    bodyColor:css('--text-secondary'),borderColor:css('--border'),borderWidth:1,padding:9});
+
+  // 1. stages — ordered categories => ordinal ramp
+  charts.f?.destroy();
+  charts.f=new Chart(cFunnel,{type:'bar',
+    data:{labels:LABELS,datasets:[{data:STAGES.map(s=>t[s]),
+      backgroundColor:['--o1','--o2','--o3','--o4','--o5'].map(css),
+      borderRadius:4,borderSkipped:false}]},
+    options:{maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{...tip(),callbacks:{label:c=>{
+        const i=c.dataIndex;
+        return i===0?` ${c.raw.toLocaleString()}`
+          :` ${c.raw.toLocaleString()} · ${rates[i-1].toFixed(2)}% of ${LABELS[i-1]}`;}}}},
+      scales:{x:{type:'logarithmic',grid:{color:css('--grid')},border:{display:false},
+          title:{display:true,text:'Count (log — stages span three orders of magnitude)',
+            color:css('--text-secondary')},
+          ticks:{color:css('--text-secondary')}},
+        y:{grid:{display:false},ticks:{color:css('--text-secondary')}}}}});
+
+  // 2. step conversion — a percentage, its own chart
+  charts.s?.destroy();
+  charts.s=new Chart(cSteps,{type:'bar',
+    data:{labels:STAGES.slice(0,-1).map((s,i)=>`${LABELS[i]} → ${LABELS[i+1]}`),
+      datasets:[{data:rates,backgroundColor:css('--s1'),borderRadius:4,borderSkipped:false}]},
+    options:{maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{...tip(),
+        callbacks:{label:c=>` ${c.raw.toFixed(2)}%`}}},
+      scales:{y:{grid:{color:css('--grid')},border:{display:false},
+          ticks:{color:css('--text-secondary'),callback:v=>v+'%'}},
+        x:{grid:{display:false},ticks:{color:css('--text-secondary'),font:{size:11}}}}}});
+
+  // 3. traffic share vs revenue share — both %, one axis is legitimate
+  const allV=totals(ROWS);
+  const chanRows=CHANNELS.map(ch=>{const c=totals(ROWS.filter(r=>r.channel===ch));
+    return {ch,vis:c.visitors,won:c.closed_won,rev:c.revenue_usd,
+      overall:100*c.closed_won/c.visitors,acv:c.revenue_usd/c.closed_won,
+      vShare:100*c.visitors/allV.visitors, rShare:100*c.revenue_usd/allV.revenue_usd};});
+  charts.c?.destroy();
+  charts.c=new Chart(cChan,{type:'bar',
+    data:{labels:chanRows.map(c=>c.ch),datasets:[
+      {label:'Share of traffic',data:chanRows.map(c=>c.vShare),backgroundColor:css('--s1'),borderRadius:3},
+      {label:'Share of revenue',data:chanRows.map(c=>c.rShare),backgroundColor:css('--s2'),borderRadius:3}]},
+    options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'bottom',labels:{color:css('--text-secondary'),
+          usePointStyle:true,boxWidth:9,padding:14}},
+        tooltip:{...tip(),callbacks:{label:c=>` ${c.dataset.label}: ${c.raw.toFixed(1)}%`}}},
+      scales:{y:{grid:{color:css('--grid')},border:{display:false},
+          ticks:{color:css('--text-secondary'),callback:v=>v+'%'}},
+        x:{grid:{display:false},ticks:{color:css('--text-secondary')}}}}});
+
+  document.getElementById('tblChan').innerHTML=
+    '<table><thead><tr><th>Channel</th><th>Visitors</th><th>Won</th>'+
+    '<th>Visitor → won</th><th>Avg deal</th><th>Revenue</th></tr></thead><tbody>'+
+    chanRows.sort((a,b)=>b.overall-a.overall).map(c=>`<tr><td>${c.ch}</td>
+      <td>${c.vis.toLocaleString()}</td><td>${c.won}</td>
+      <td>${c.overall.toFixed(3)}%</td><td>${usd(c.acv)}</td>
+      <td>${usd(c.rev)}</td></tr>`).join('')+'</tbody></table>';
+}
+
+const fr=document.getElementById('filters');
+['All',...CHANNELS].forEach(ch=>{
+  const c=document.createElement('div');
+  c.className='chip'+(ch==='All'?' active':''); c.textContent=ch;
+  c.onclick=()=>{channel=ch;[...fr.querySelectorAll('.chip')].forEach(x=>x.classList.remove('active'));
+    c.classList.add('active'); render();};
+  fr.appendChild(c);
+});
+render();
+</script>
+</body>
+</html>
