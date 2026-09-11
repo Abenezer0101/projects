@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US State Tile Map</title>
+<script src="data/states.js"></script>
+<style>
+  :root{
+    color-scheme:light;
+    --plane:#f6f7f9; --surface-1:#fcfcfb; --border:rgba(12,18,32,.12);
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#82817c;
+    --accent:#2a78d6;
+    /* sequential ramp, light -> dark, single hue */
+    --q1:#cde2fb; --q2:#9ec5f4; --q3:#6da7ec; --q4:#3987e5; --q5:#256abf; --q6:#104281;
+    --tile-ink:#0b0b0b; --tile-ink-dark:#ffffff;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark;
+    --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --accent:#3987e5;
+    --q1:#184f95; --q2:#256abf; --q3:#2a78d6; --q4:#5598e7; --q5:#9ec5f4; --q6:#cde2fb;
+    --tile-ink:#ffffff; --tile-ink-dark:#0b0b0b;
+  }}
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --accent:#3987e5;
+    --q1:#184f95; --q2:#256abf; --q3:#2a78d6; --q4:#5598e7; --q5:#9ec5f4; --q6:#cde2fb;
+    --tile-ink:#ffffff; --tile-ink-dark:#0b0b0b;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--plane);color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+  .wrap{max-width:900px;margin:0 auto;padding:44px 22px 70px}
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  h1{font-size:clamp(26px,5vw,36px);letter-spacing:-.02em;margin:8px 0;font-weight:800}
+  .lede{color:var(--text-secondary);max-width:62ch;margin:0 0 22px}
+  .controls{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+  .chip{cursor:pointer;border:1px solid var(--border);background:var(--surface-1);
+    color:var(--text-secondary);padding:6px 14px;border-radius:99px;font-size:13px}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:14px;
+    padding:20px;margin-bottom:16px}
+  svg{width:100%;height:auto;display:block}
+  .tile{cursor:pointer;transition:opacity .12s}
+  .tile:hover rect{stroke:var(--text-primary);stroke-width:2.5}
+  .tile text{font-size:9px;font-weight:700;pointer-events:none;
+    font-family:system-ui,sans-serif}
+  .legend{display:flex;align-items:center;gap:2px;margin-top:16px;flex-wrap:wrap}
+  .legend .sw{width:40px;height:13px}
+  .legend .lbl{font-size:11px;color:var(--text-secondary);margin-right:10px}
+  .legend .end{font-size:11px;color:var(--text-secondary)}
+  #tip{position:fixed;pointer-events:none;background:var(--surface-1);
+    border:1px solid var(--border);border-radius:9px;padding:9px 12px;font-size:13px;
+    box-shadow:0 6px 20px rgba(0,0,0,.16);opacity:0;transition:opacity .1s;z-index:9}
+  #tip strong{display:block;font-size:13.5px;margin-bottom:2px}
+  #tip span{color:var(--text-secondary)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:right;padding:6px 9px;border-bottom:1px solid var(--border)}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--text-secondary);font-weight:600;cursor:pointer;user-select:none}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  button.toggle{background:transparent;border:1px solid var(--border);color:var(--text-secondary);
+    font:inherit;font-size:12px;padding:5px 12px;border-radius:99px;cursor:pointer}
+  .note{font-size:12.5px;color:var(--text-muted);margin-top:12px}
+  footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);
+    font-size:12px;color:var(--text-muted)}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">50 states + DC</div>
+  <h1>US State Tile Map</h1>
+  <p class="lede">A choropleth on a tile grid rather than a geographic map. Every state gets
+  an equal square, because on a real map Alaska and Montana dominate the picture while holding
+  almost nobody — area would encode the opposite of the data.</p>
+
+  <div class="controls" id="controls"><span style="font-size:12px;color:var(--text-secondary)">Metric</span></div>
+
+  <div class="card">
+    <div id="mapWrap"></div>
+    <div class="legend" id="legend"></div>
+    <div class="note" id="note"></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <strong style="font-size:15px">All states</strong>
+      <button class="toggle" id="tTbl">Hide table</button>
+    </div>
+    <div id="tblWrap"><table id="tbl"><thead><tr>
+      <th data-k="name">State</th><th data-k="region">Region</th>
+      <th data-k="pop">Population</th><th data-k="inc">Median income</th>
+    </tr></thead><tbody></tbody></table></div>
+  </div>
+
+  <footer>
+    Data: US Census Bureau — 2020 Decennial Census population and ACS median household income,
+    illustrative approximations for a portfolio analysis. Same dataset as the
+    <a href="../us-population-income-dashboard/" style="color:var(--accent)">population &amp; income dashboard</a>.
+    Map is inline SVG with no external libraries.
+  </footer>
+</div>
+<div id="tip" role="tooltip"></div>
+
+<script>
+const S = window.STATES;
+const CODES = Object.keys(S);
+const METRICS = {
+  pop: {label:'Population', fmt:v=>v.toLocaleString(),
+        short:v=> v>=1e6 ? (v/1e6).toFixed(1)+'M' : (v/1e3).toFixed(0)+'K'},
+  inc: {label:'Median household income', fmt:v=>'$'+v.toLocaleString(),
+        short:v=>'$'+(v/1000).toFixed(0)+'k'},
+};
+let metric = 'pop', sortK = 'pop', sortDir = -1;
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+// Six quantile bins. Quantiles, not equal-width: population is so skewed that
+// equal-width bins would put 48 states in bin 1 and California alone in bin 6.
+function bins(values){
+  const s=[...values].sort((a,b)=>a-b), out=[];
+  for(let i=1;i<6;i++) out.push(s[Math.floor(i*s.length/6)]);
+  return out;
+}
+const binOf=(v,b)=>{let i=0; while(i<b.length && v>=b[i]) i++; return i;};
+
+function draw(){
+  const vals = CODES.map(c=>S[c][metric]);
+  const b = bins(vals);
+  const COLS=11, ROWS=8, SZ=52, GAP=4;
+  const W = COLS*(SZ+GAP), H = ROWS*(SZ+GAP);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="US states coloured by ${METRICS[metric].label}">`;
+  for(const code of CODES){
+    const d = S[code], q = binOf(d[metric], b);
+    const x = d.c*(SZ+GAP), y = d.r*(SZ+GAP);
+    // ink flips on the dark half of the ramp so labels stay readable
+    const ink = q >= 4 ? 'var(--tile-ink-dark)' : 'var(--tile-ink)';
+    svg += `<g class="tile" data-code="${code}" tabindex="0" role="button"
+        aria-label="${d.name}: ${METRICS[metric].fmt(d[metric])}">
+      <rect x="${x}" y="${y}" width="${SZ}" height="${SZ}" rx="6"
+        fill="var(--q${q+1})" stroke="var(--surface-1)" stroke-width="1.5"/>
+      <text x="${x+SZ/2}" y="${y+SZ/2-3}" text-anchor="middle" fill="${ink}">${code}</text>
+      <text x="${x+SZ/2}" y="${y+SZ/2+11}" text-anchor="middle" fill="${ink}"
+        style="font-size:8px;font-weight:500;opacity:.85">${METRICS[metric].short(d[metric])}</text>
+    </g>`;
+  }
+  svg += `</svg>`;
+  document.getElementById('mapWrap').innerHTML = svg;
+
+  // legend — a scale is mandatory for sequential encoding
+  const edges=[Math.min(...vals),...b,Math.max(...vals)];
+  let lg = `<span class="lbl">${METRICS[metric].label}</span>`
+         + `<span class="end">${METRICS[metric].short(edges[0])}</span>`;
+  for(let i=0;i<6;i++) lg += `<div class="sw" style="background:var(--q${i+1})"
+      title="${METRICS[metric].short(edges[i])} – ${METRICS[metric].short(edges[i+1])}"></div>`;
+  lg += `<span class="end">${METRICS[metric].short(edges[6])}</span>`;
+  document.getElementById('legend').innerHTML = lg;
+
+  const hi = CODES.reduce((a,c)=>S[c][metric]>S[a][metric]?c:a);
+  const lo = CODES.reduce((a,c)=>S[c][metric]<S[a][metric]?c:a);
+  document.getElementById('note').textContent =
+    `Highest: ${S[hi].name} (${METRICS[metric].fmt(S[hi][metric])}). `
+  + `Lowest: ${S[lo].name} (${METRICS[metric].fmt(S[lo][metric])}). `
+  + `Ratio ${(S[hi][metric]/S[lo][metric]).toFixed(1)}×. Bins are quantiles — six equal-count groups.`;
+
+  wireTiles();
+  window.__state = {metric, bins:b, tiles:document.querySelectorAll('.tile').length};
+}
+
+const tip = document.getElementById('tip');
+function wireTiles(){
+  document.querySelectorAll('.tile').forEach(g=>{
+    const d = S[g.dataset.code];
+    const show = e => {
+      tip.innerHTML = `<strong>${d.name}</strong>
+        <span>${METRICS.pop.fmt(d.pop)} people · ${METRICS.inc.fmt(d.inc)} median<br>${d.region}</span>`;
+      tip.style.opacity = 1;
+      const r = g.getBoundingClientRect();
+      tip.style.left = Math.min(r.left, innerWidth-190) + 'px';
+      tip.style.top = Math.max(r.top - 62, 8) + 'px';
+    };
+    g.addEventListener('mouseenter', show);
+    g.addEventListener('focus', show);
+    g.addEventListener('mouseleave', ()=>tip.style.opacity=0);
+    g.addEventListener('blur', ()=>tip.style.opacity=0);
+  });
+}
+
+function drawTable(){
+  const rows = CODES.map(c=>({code:c,...S[c]}))
+    .sort((a,b)=>{const A=a[sortK],B=b[sortK];
+      return (typeof A==='number'?A-B:String(A).localeCompare(B))*sortDir;});
+  document.querySelector('#tbl tbody').innerHTML = rows.map(r=>`<tr>
+    <td>${r.name}</td><td>${r.region}</td>
+    <td>${r.pop.toLocaleString()}</td><td>$${r.inc.toLocaleString()}</td></tr>`).join('');
+}
+
+const ctr = document.getElementById('controls');
+Object.entries(METRICS).forEach(([k,m],i)=>{
+  const c=document.createElement('div');
+  c.className='chip'+(i===0?' active':''); c.textContent=m.label;
+  c.onclick=()=>{metric=k;[...ctr.querySelectorAll('.chip')].forEach(x=>x.classList.remove('active'));
+    c.classList.add('active'); draw();};
+  ctr.appendChild(c);
+});
+document.querySelectorAll('#tbl th').forEach(th=>th.onclick=()=>{
+  const k=th.dataset.k; sortDir = sortK===k ? -sortDir : -1; sortK=k; drawTable();});
+document.getElementById('tTbl').onclick=e=>{
+  const w=document.getElementById('tblWrap'); w.hidden=!w.hidden;
+  e.target.textContent = w.hidden ? 'Show table' : 'Hide table';};
+
+draw(); drawTable();
+</script>
+</body>
+</html>
