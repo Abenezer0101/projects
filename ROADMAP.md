@@ -20,7 +20,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 - [x] **Day 11** — Sales-funnel dashboard with conversion-rate KPIs *(done)*
 - [x] **Day 12** — Excel financial model: loan amortization / ROI workbook with live formulas *(done)*
 - [x] **Day 13** — Python data-analysis script: clean a messy dataset, output static matplotlib charts + findings *(done)*
-- [ ] **Day 14** — Interactive US choropleth (population by state), inline SVG + JS
+- [x] **Day 14** — Interactive US choropleth (population by state), inline SVG + JS *(done)*
 
 ## Week 3 — Applications & End-to-End
 - [ ] **Day 15** — Expense tracker web app (localStorage, charts)
