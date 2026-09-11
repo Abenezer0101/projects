@@ -23,7 +23,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 - [x] **Day 14** — Interactive US choropleth (population by state), inline SVG + JS *(done)*
 
 ## Week 3 — Applications & End-to-End
-- [ ] **Day 15** — Expense tracker web app (localStorage, charts)
+- [x] **Day 15** — Expense tracker web app (localStorage, charts) *(done)*
 - [ ] **Day 16** — Weather app (fetch API, clean UI; API key handled via user input, never committed)
 - [ ] **Day 17** — Markdown notes app with live preview
 - [ ] **Day 18** — Data-driven quiz app

@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expense Tracker</title>
+<style>
+  :root{
+    color-scheme:light;
+    --plane:#f6f7f9; --surface-1:#fcfcfb; --border:rgba(12,18,32,.12);
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#82817c;
+    --grid:rgba(12,18,32,.08); --accent:#2a78d6;
+    --good:#1baf7a; --warn:#eda100; --bad:#e34948;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark;
+    --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --grid:rgba(255,255,255,.10); --accent:#3987e5;
+    --good:#199e70; --warn:#c98500; --bad:#e66767;
+  }}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--plane);color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+  .wrap{max-width:980px;margin:0 auto;padding:40px 20px 70px}
+  h1{font-size:clamp(24px,5vw,32px);letter-spacing:-.02em;margin:0 0 4px;font-weight:800}
+  .lede{color:var(--text-secondary);margin:0 0 24px;font-size:14px}
+  .grid{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--surface-1);border:1px solid var(--border);
+    border-radius:13px;padding:18px;margin-bottom:16px}
+  .card h2{font-size:14px;margin:0 0 12px;letter-spacing:.02em}
+  label{display:block;font-size:12px;color:var(--text-secondary);margin:10px 0 4px}
+  input,select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
+    background:var(--plane);color:var(--text-primary);font:inherit;font-size:14px}
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+  button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--border);
+    background:var(--surface-1);color:var(--text-primary);padding:8px 14px;font-size:14px}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;width:100%;margin-top:14px}
+  button.link{border:none;background:none;color:var(--accent);padding:2px 6px;font-size:13px}
+  .err{color:var(--bad);font-size:12.5px;margin-top:8px;min-height:18px}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+  .tile{background:var(--surface-1);border:1px solid var(--border);border-radius:11px;padding:12px 14px}
+  .tile .v{font-size:21px;font-weight:700} .tile .l{font-size:11.5px;color:var(--text-secondary)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:right;padding:7px 8px;border-bottom:1px solid var(--border)}
+  th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+  th{color:var(--text-secondary);font-weight:600}
+  tr.over td{background:color-mix(in srgb, var(--bad) 8%, transparent)}
+  .bar{display:flex;align-items:center;gap:9px;margin-bottom:9px;font-size:12.5px}
+  .bar .name{width:92px;flex-shrink:0;color:var(--text-secondary)}
+  /* budget rows carry a status badge, so the label column needs room for it */
+  .bar.budget .name{width:158px;white-space:nowrap;overflow:visible}
+  .bar .track{flex:1;height:15px;background:var(--grid);border-radius:4px;position:relative;overflow:hidden}
+  .bar .fill{height:100%;border-radius:4px}
+  .bar .val{width:86px;text-align:right;color:var(--text-secondary)}
+  .badge{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:99px;margin-left:6px}
+  .badge.over{background:var(--bad);color:#fff} .badge.near{background:var(--warn);color:#000}
+  .empty{color:var(--text-muted);font-size:13px;text-align:center;padding:26px 10px}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);
+    background:var(--text-primary);color:var(--plane);padding:10px 16px;border-radius:9px;
+    font-size:13.5px;display:flex;align-items:center;gap:12px;transition:transform .2s;z-index:9}
+  #toast.show{transform:translateX(-50%) translateY(0)}
+  #toast button{background:none;border:none;color:var(--accent);font-weight:700;padding:0}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .muted{font-size:12px;color:var(--text-muted);margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Expense Tracker</h1>
+  <p class="lede">Add expenses, set category budgets, watch the bars. Everything is stored in
+  your browser — nothing is uploaded. Export produces the exact CSV the
+  <a href="../budget-analyzer/" style="color:var(--accent)">budget analyzer</a> reads.</p>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>Add an expense</h2>
+        <form id="form" novalidate>
+          <label for="date">Date</label><input type="date" id="date" required>
+          <label for="desc">Description</label>
+          <input type="text" id="desc" placeholder="Kroger" maxlength="120" required>
+          <label for="cat">Category</label><select id="cat"></select>
+          <label for="amt">Amount</label>
+          <input type="number" id="amt" step="0.01" min="0.01" placeholder="0.00" required>
+          <div class="err" id="err" role="alert"></div>
+          <button type="submit" class="primary">Add expense</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Monthly budgets</h2>
+        <div id="budgetInputs"></div>
+        <div class="muted">Leave blank for no budget. Bars turn amber at 80%, red past 100%.</div>
+      </div>
+
+      <div class="card">
+        <h2>Data</h2>
+        <div class="row">
+          <button id="exportBtn">Export CSV</button>
+          <button id="importBtn">Import CSV</button>
+          <input type="file" id="importFile" accept=".csv" hidden>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button id="demoBtn" class="link">Load sample data</button>
+          <button id="clearBtn" class="link">Clear everything</button>
+        </div>
+        <div class="muted" id="storageNote"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="tiles" id="tiles"></div>
+
+      <div class="card">
+        <h2>Spending by category</h2>
+        <div id="catChart"></div>
+      </div>
+
+      <div class="card">
+        <h2>Budget status</h2>
+        <div id="budgetChart"></div>
+      </div>
+
+      <div class="card">
+        <h2>Expenses <span id="count" style="color:var(--text-secondary);font-weight:400"></span></h2>
+        <div id="listWrap"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"><span id="toastMsg"></span>
+  <button id="undoBtn" hidden>Undo</button></div>
+
+<script type="module">
+import { load, save, validate, normalize, totals, budgetStatus,
+         toCSV, fromCSV, CATEGORIES } from './app.js';
+
+let state = load();
+let lastDeleted = null, toastTimer = null;
+
+const $ = id => document.getElementById(id);
+const money = n => '$' + n.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
+
+/* ------------------------------------------------------------------ setup */
+$('cat').innerHTML = CATEGORIES.map(c => `<option>${c}</option>`).join('');
+$('date').value = new Date().toISOString().slice(0,10);
+$('budgetInputs').innerHTML = CATEGORIES.map(c => `
+  <label for="b-${c}">${c}</label>
+  <input type="number" id="b-${c}" data-cat="${c}" min="0" step="1" placeholder="—"
+         value="${state.budgets[c] ?? ''}">`).join('');
+
+/* ----------------------------------------------------------------- render */
+function render(){
+  const { total, byCategory } = totals(state.expenses);
+  const months = new Set(state.expenses.map(e => e.date.slice(0,7))).size || 1;
+  const over = budgetStatus(state.expenses, state.budgets).filter(r => r.state === 'over').length;
+
+  $('tiles').innerHTML = [
+    [money(total), 'Total spent'],
+    [String(state.expenses.length), 'Expenses'],
+    [money(total / months), 'Per month'],
+    [String(over), over === 1 ? 'Budget exceeded' : 'Budgets exceeded'],
+  ].map(t => `<div class="tile"><div class="v">${t[0]}</div><div class="l">${t[1]}</div></div>`).join('');
+
+  // category bars — one measure across categories, so one hue
+  const cats = Object.entries(byCategory).sort((a,b)=>b[1]-a[1]);
+  const max = Math.max(...cats.map(c=>c[1]), 1);
+  $('catChart').innerHTML = cats.length ? cats.map(([c,v]) => `
+    <div class="bar"><div class="name">${c}</div>
+      <div class="track"><div class="fill" style="width:${(v/max*100).toFixed(1)}%;
+        background:var(--accent)"></div></div>
+      <div class="val">${money(v)}</div></div>`).join('')
+    : '<div class="empty">No expenses yet.</div>';
+
+  // budget bars — status colour always paired with a text badge, never colour alone
+  const rows = budgetStatus(state.expenses, state.budgets);
+  $('budgetChart').innerHTML = rows.length ? rows.map(r => {
+    const colour = r.state === 'over' ? 'var(--bad)' : r.state === 'near' ? 'var(--warn)' : 'var(--good)';
+    const badge = r.state === 'over' ? '<span class="badge over">OVER</span>'
+                : r.state === 'near' ? '<span class="badge near">NEAR</span>' : '';
+    return `<div class="bar budget"><div class="name">${r.category}${badge}</div>
+      <div class="track"><div class="fill" style="width:${Math.min(r.ratio,1)*100}%;
+        background:${colour}"></div></div>
+      <div class="val">${money(r.spent)} / ${money(r.limit)}</div></div>`;
+  }).join('') : '<div class="empty">Set a budget to track it.</div>';
+
+  // list
+  const list = [...state.expenses].sort((a,b)=>b.date.localeCompare(a.date));
+  $('count').textContent = list.length ? `(${list.length})` : '';
+  $('listWrap').innerHTML = list.length ? `<table><thead><tr>
+      <th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th></th>
+    </tr></thead><tbody>${list.map(e => `<tr>
+      <td>${e.date}</td><td>${escapeHTML(e.description)}</td><td>${e.category}</td>
+      <td>${money(e.amount)}</td>
+      <td><button class="link" data-del="${e.id}" aria-label="Delete ${escapeHTML(e.description)}">Delete</button></td>
+    </tr>`).join('')}</tbody></table>` : '<div class="empty">Nothing here yet — add one on the left.</div>';
+
+  window.__state = state;   // exposed for the browser tests
+}
+
+const escapeHTML = s => s.replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function persist(){
+  if (!save(state)) $('storageNote').textContent =
+    'Storage unavailable (private mode?) — data will not survive a reload.';
+  render();
+}
+
+/* ----------------------------------------------------------------- events */
+$('form').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const candidate = { date:$('date').value, description:$('desc').value,
+                      category:$('cat').value, amount:$('amt').value };
+  const v = validate(candidate);
+  $('err').textContent = v.ok ? '' : v.error;
+  if (!v.ok) return;
+  state.expenses.push(normalize(candidate));
+  $('desc').value = ''; $('amt').value = '';
+  $('desc').focus();
+  persist();
+  toast('Expense added');
+});
+
+$('listWrap').addEventListener('click', ev => {
+  const id = ev.target.dataset?.del;
+  if (!id) return;
+  const i = state.expenses.findIndex(e => e.id === id);
+  if (i < 0) return;
+  lastDeleted = { item: state.expenses[i], index: i };
+  state.expenses.splice(i, 1);
+  persist();
+  toast('Expense deleted', true);
+});
+
+$('undoBtn').addEventListener('click', () => {
+  if (!lastDeleted) return;
+  state.expenses.splice(lastDeleted.index, 0, lastDeleted.item);
+  lastDeleted = null;
+  persist();
+  toast('Restored');
+});
+
+$('budgetInputs').addEventListener('input', ev => {
+  const cat = ev.target.dataset.cat; if (!cat) return;
+  const val = Number(ev.target.value);
+  if (ev.target.value === '' || !isFinite(val) || val <= 0) delete state.budgets[cat];
+  else state.budgets[cat] = val;
+  persist();
+});
+
+$('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([toCSV(state.expenses)], { type:'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'expenses.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Exported expenses.csv');
+});
+
+$('importBtn').addEventListener('click', () => $('importFile').click());
+$('importFile').addEventListener('change', async ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  const { added, skipped, error } = fromCSV(await f.text());
+  if (error) { toast(error); return; }
+  state.expenses.push(...added);
+  persist();
+  toast(`Imported ${added.length}${skipped ? `, skipped ${skipped}` : ''}`);
+  ev.target.value = '';
+});
+
+$('demoBtn').addEventListener('click', () => {
+  const today = new Date();
+  const sample = [
+    ['Kroger','Groceries',86.42,2],['Chipotle','Dining',13.75,3],['MARTA Breeze','Transport',95,5],
+    ['Sunrise Apartments','Housing',1450,8],['Georgia Power','Utilities',118.30,9],
+    ['Amazon','Shopping',64.20,11],['AMC Theatres','Entertainment',28,13],
+    ['Publix','Groceries',52.10,15],['Starbucks','Dining',6.85,16],['CVS','Health',24.99,18],
+  ];
+  for (const [description, category, amount, ago] of sample){
+    const d = new Date(today); d.setDate(d.getDate() - ago);
+    state.expenses.push(normalize({ date:d.toISOString().slice(0,10), description, category, amount }));
+  }
+  Object.assign(state.budgets, { Groceries:120, Dining:60, Transport:100, Housing:1500, Shopping:50 });
+  document.querySelectorAll('#budgetInputs input').forEach(i =>
+    i.value = state.budgets[i.dataset.cat] ?? '');
+  persist();
+  toast('Sample data loaded');
+});
+
+$('clearBtn').addEventListener('click', () => {
+  if (!confirm('Delete all expenses and budgets? This cannot be undone.')) return;
+  state = { version:2, expenses:[], budgets:{} };
+  document.querySelectorAll('#budgetInputs input').forEach(i => i.value = '');
+  persist();
+  toast('Cleared');
+});
+
+function toast(msg, undo = false){
+  $('toastMsg').textContent = msg;
+  $('undoBtn').hidden = !undo;
+  $('toast').classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { $('toast').classList.remove('show'); if (!undo) lastDeleted = null; }, 4200);
+}
+
+render();
+</script>
+</body>
+</html>

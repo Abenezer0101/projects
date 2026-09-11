@@ -21,6 +21,7 @@ Data, analytics, and application builds.
 | [Bike-Share Data Cleaning](./bikeshare-data-cleaning/) | pandas, matplotlib | Messy trip export cleaned with an auditable pipeline; charts in matplotlib. |
 | [US State Tile Map](./us-choropleth/) | SVG, JS | Interactive tile-grid choropleth, hand-written SVG, no dependencies. |
 | [PDF Study Kit](./pdf-study-kit/) | Python, FastAPI, Docker | PDF → study material offline: TF-IDF, extractive summarisation, CLI + REST API. |
+| [Expense Tracker](./expense-tracker/) | JS | CRUD app with versioned localStorage, budgets, undo, and CSV round-trip. |
 | [Sales Ops Dashboard](./sales-ops-dashboard/) | JS | Sales operations dashboard. |
 | [Impossible Gift Machine](./gift-app/) | JS | Gift-picking app. |
 
