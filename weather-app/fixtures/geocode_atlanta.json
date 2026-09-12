@@ -1,0 +1,22 @@
+{
+ "results": [
+  {
+   "name": "Atlanta",
+   "latitude": 33.749,
+   "longitude": -84.388,
+   "country": "United States",
+   "country_code": "US",
+   "admin1": "Georgia",
+   "timezone": "America/New_York"
+  },
+  {
+   "name": "Atlanta",
+   "latitude": 31.99,
+   "longitude": -83.43,
+   "country": "United States",
+   "country_code": "US",
+   "admin1": "Georgia",
+   "timezone": "America/New_York"
+  }
+ ]
+}
