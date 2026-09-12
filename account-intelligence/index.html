@@ -1,241 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Account Intelligence</title>
-<meta name="description" content="Score prospective companies from 10-K signals into Pursue / Watch / Avoid tiers.">
 <style>
   :root{
     color-scheme:light;
-    --plane:#f7f8fa; --surface:#ffffff; --surface-2:#f2f4f7;
-    --ink:#0c1220; --ink-2:#4b5468; --muted:#8a92a4;
-    --grid:#e4e8ef; --border:rgba(12,18,32,.10);
-    --accent:#2a78d6; --accent-2:#1baf7a;
-    --pursue:#0ca30c; --watch:#eda100; --avoid:#d03b3b;
-    --bar-bg:#eef1f6;
-    --shadow:0 1px 2px rgba(12,18,32,.05), 0 12px 30px -18px rgba(12,18,32,.30);
+    --plane:#f6f7f9; --surface-1:#fcfcfb; --border:rgba(12,18,32,.12);
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#82817c;
+    --grid:rgba(12,18,32,.08); --accent:#2a78d6;
+    --pursue:#1baf7a; --watch:#eda100; --avoid:#e34948;
   }
   @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
     color-scheme:dark;
-    --plane:#0b0e15; --surface:#151a24; --surface-2:#1c222e;
-    --ink:#f2f5fa; --ink-2:#aab3c5; --muted:#79839a;
-    --grid:#262d3a; --border:rgba(255,255,255,.10);
-    --accent:#3987e5; --accent-2:#199e70;
-    --pursue:#22b422; --watch:#f2b53a; --avoid:#e05656;
-    --bar-bg:#1f2632;
-    --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px -18px rgba(0,0,0,.75);
+    --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --grid:rgba(255,255,255,.10); --accent:#3987e5;
+    --pursue:#199e70; --watch:#c98500; --avoid:#e66767;
   }}
-  :root[data-theme="dark"]{
-    color-scheme:dark;
-    --plane:#0b0e15; --surface:#151a24; --surface-2:#1c222e;
-    --ink:#f2f5fa; --ink-2:#aab3c5; --muted:#79839a;
-    --grid:#262d3a; --border:rgba(255,255,255,.10);
-    --accent:#3987e5; --accent-2:#199e70;
-    --pursue:#22b422; --watch:#f2b53a; --avoid:#e05656;
-    --bar-bg:#1f2632;
-    --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px -18px rgba(0,0,0,.75);
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0}
-  body{background:var(--plane);color:var(--ink);
-    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.45}
-  .wrap{max-width:1200px;margin:0 auto;padding:26px 22px 64px}
-
-  header .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600}
-  header h1{margin:4px 0 2px;font-size:26px;font-weight:750;letter-spacing:-.02em}
-  header p{margin:0;color:var(--ink-2);max-width:70ch}
-
-  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0}
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
-  .tile{padding:16px}
-  .tile .l{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-2)}
-  .tile .v{font-size:30px;font-weight:750;letter-spacing:-.02em;margin-top:4px}
-  .tile .v small{font-size:15px;font-weight:600;color:var(--muted)}
-  .tile.pursue .v{color:var(--pursue)} .tile.avoid .v{color:var(--avoid)}
-
-  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
-  .toolbar h2{margin:0;font-size:16px;font-weight:650;margin-right:auto}
-  .filters{display:flex;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px}
-  .filters button{font:inherit;font-size:12px;color:var(--ink-2);background:none;border:none;padding:6px 12px;border-radius:7px;cursor:pointer}
-  .filters button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
-  .filters button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-
-  .layout{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
-
-  .board{display:flex;flex-direction:column}
-  .board .head,.rowc{display:grid;grid-template-columns:26px 1fr 132px 92px;gap:12px;align-items:center}
-  .board .head{padding:0 16px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
-  .rowc{width:100%;text-align:left;background:none;border:none;font:inherit;color:inherit;
-    padding:12px 16px;border-top:1px solid var(--border);cursor:pointer;transition:background .12s}
-  .rowc:hover{background:var(--surface-2)}
-  .rowc[aria-selected="true"]{background:var(--surface-2);box-shadow:inset 3px 0 0 var(--accent)}
-  .rowc:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-  .rank{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600}
-  .co .nm{font-weight:650} .co .mt{font-size:12px;color:var(--muted)}
-  .scorebar{display:flex;align-items:center;gap:8px}
-  .track{flex:1;height:8px;background:var(--bar-bg);border-radius:5px;overflow:hidden}
-  .fill{height:100%;border-radius:5px}
-  .scoreN{font-variant-numeric:tabular-nums;font-weight:700;width:30px;text-align:right}
-  .tier{justify-self:end;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;display:inline-flex;gap:5px;align-items:center;white-space:nowrap}
-  .tier.pursue{background:color-mix(in srgb,var(--pursue) 15%,transparent);color:var(--pursue)}
-  .tier.watch{background:color-mix(in srgb,var(--watch) 20%,transparent);color:var(--watch)}
-  .tier.avoid{background:color-mix(in srgb,var(--avoid) 15%,transparent);color:var(--avoid)}
-
-  /* detail */
-  .detail{padding:20px;position:sticky;top:16px}
-  .detail .dh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:4px}
-  .detail .dh h3{margin:0;font-size:19px;font-weight:700}
-  .detail .dh .ticker{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-  .bigscore{display:flex;align-items:baseline;gap:8px;margin:8px 0 2px}
-  .bigscore b{font-size:40px;font-weight:800;letter-spacing:-.03em}
-  .bigscore span{color:var(--muted);font-size:14px}
-  .rec{font-size:13px;color:var(--ink-2);margin:8px 0 16px;padding:10px 12px;background:var(--surface-2);border-radius:10px;border-left:3px solid var(--accent)}
-  .factors{display:flex;flex-direction:column;gap:11px;margin-bottom:16px}
-  .factor .fl{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
-  .factor .fl .fn{color:var(--ink-2)} .factor .fl .fv{font-variant-numeric:tabular-nums;font-weight:600}
-  .factor .ft{height:7px;background:var(--bar-bg);border-radius:4px;overflow:hidden}
-  .factor .ff{height:100%;border-radius:4px;background:var(--accent)}
-  .signals{font-size:12px}
-  .signals .st{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;margin-bottom:8px}
-  .sig{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:1px solid var(--border)}
-  .sig .ic{flex:none;width:16px;text-align:center;font-weight:700}
-  .sig.pos .ic{color:var(--pursue)} .sig.neg .ic{color:var(--avoid)} .sig.neu .ic{color:var(--muted)}
-  .sig .tx{color:var(--ink-2)}
-
-  footer{margin-top:24px;color:var(--muted);font-size:12px}
-  .method{margin-top:8px}
-  .method summary{cursor:pointer;color:var(--ink-2)}
-  .method p{color:var(--muted);font-size:12px;max-width:80ch}
-  @media(max-width:900px){.tiles{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.detail{position:static}}
-  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--plane);color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+  .wrap{max-width:1120px;margin:0 auto;padding:40px 20px 70px}
+  h1{font-size:clamp(24px,5vw,32px);margin:0 0 4px;font-weight:800;letter-spacing:-.02em}
+  .lede{color:var(--text-secondary);max-width:70ch;margin:0 0 22px;font-size:14px}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .tile{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+  .tile .v{font-size:24px;font-weight:700} .tile .l{font-size:11.5px;color:var(--text-secondary)}
+  .tile.pursue{border-left:3px solid var(--pursue)} .tile.avoid{border-left:3px solid var(--avoid)}
+  .cols{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
+  @media(max-width:900px){.cols{grid-template-columns:1fr}}
+  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+  .card h2{font-size:14px;margin:0 0 10px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .chip{cursor:pointer;border:1px solid var(--border);background:var(--surface-1);
+    color:var(--text-secondary);padding:5px 12px;border-radius:99px;font-size:12.5px}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .rowc{display:grid;grid-template-columns:26px 1fr 150px 92px;gap:10px;align-items:center;
+    width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--border);
+    padding:10px 4px;cursor:pointer;color:inherit;font:inherit}
+  .rowc:hover{background:var(--plane)} .rowc[aria-selected="true"]{background:var(--plane)}
+  .rank{color:var(--text-muted);font-size:12px}
+  .nm{font-weight:600;font-size:13.5px} .mt{color:var(--text-muted);font-size:11.5px}
+  .track{display:inline-block;width:96px;height:9px;background:var(--grid);border-radius:3px;overflow:hidden;vertical-align:middle}
+  .fill{display:block;height:100%}
+  .scoreN{font-size:12.5px;margin-left:7px;color:var(--text-secondary)}
+  .tier{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;text-align:center}
+  .tier.pursue{background:var(--pursue);color:#fff}
+  .tier.watch{background:var(--watch);color:#000}
+  .tier.avoid{background:var(--avoid);color:#fff}
+  .fbar{display:flex;align-items:center;gap:9px;margin-bottom:7px;font-size:12px}
+  .fbar .n{width:126px;color:var(--text-secondary)}
+  .fbar .t{flex:1;height:11px;background:var(--grid);border-radius:3px;overflow:hidden}
+  .fbar .v{width:30px;text-align:right;color:var(--text-secondary)}
+  .sig{font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:8px}
+  .sig .k{font-weight:700;width:14px;flex-shrink:0}
+  .sig.pos .k{color:var(--pursue)} .sig.neg .k{color:var(--avoid)} .sig.neu .k{color:var(--text-muted)}
+  .fin{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:12.5px;margin-top:6px}
+  .fin .k{color:var(--text-secondary)} .fin .v{text-align:right;font-variant-numeric:tabular-nums}
+  .wrow{display:flex;align-items:center;gap:9px;font-size:12px;margin-bottom:6px}
+  .wrow label{width:126px;color:var(--text-secondary)}
+  .wrow input{flex:1} .wrow .pct{width:36px;text-align:right;color:var(--text-secondary)}
+  .note{font-size:11.5px;color:var(--text-muted);margin-top:8px}
+  footer{margin-top:24px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted)}
 </style>
-
+</head>
+<body>
 <div class="wrap">
-  <header>
-    <div class="eyebrow">Marketing Intelligence · 10-K Signal Model</div>
-    <h1>Account Intelligence</h1>
-    <p>Prospective accounts scored on signals extracted from their latest Form 10-K. The composite Partner Fit Score ranks each into Pursue, Watch, or Avoid — so outreach spends time where it converts.</p>
-  </header>
+  <h1>Account Intelligence</h1>
+  <p class="lede">Ten prospective accounts scored from 10-K-style financials into Pursue / Watch / Avoid.
+  Every score here is <strong>computed</strong> from the line items below it — move a weight slider and
+  the rankings re-derive. Nothing is hardcoded.</p>
 
   <div class="tiles" id="tiles"></div>
 
-  <div class="toolbar">
-    <h2>Scoreboard</h2>
-    <div class="filters" role="group" aria-label="Filter by tier">
-      <button data-f="all" aria-pressed="true">All</button>
-      <button data-f="pursue">Pursue</button>
-      <button data-f="watch">Watch</button>
-      <button data-f="avoid">Avoid</button>
+  <div class="cols">
+    <div>
+      <div class="card">
+        <div class="chips" id="chips"></div>
+        <div id="rows" role="listbox" aria-label="Accounts"></div>
+      </div>
+      <div class="card">
+        <h2>Model weights</h2>
+        <div id="weights"></div>
+        <div class="note" id="wnote"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" id="detail"></div>
     </div>
   </div>
 
-  <div class="layout">
-    <section class="card board">
-      <div class="head"><span>#</span><span>Company</span><span>Fit score</span><span></span></div>
-      <div id="rows"></div>
-    </section>
-    <aside class="card detail" id="detail"></aside>
-  </div>
-
   <footer>
-    Illustrative sample data — company figures and 10-K excerpts are examples, not sourced filings.
-    <details class="method"><summary>How the score works</summary>
-      <p>Partner Fit Score is a weighted blend of six factors read from the 10-K: Financial Health (25%), Growth Momentum (20%), Marketing Intensity — SG&A and advertising spend as a demand signal (18%), Solvency &amp; Liquidity (15%), Risk Profile — inverted from the density and severity of risk-factor and going-concern language (12%), and Strategic Fit (10%). ≥70 → Pursue, 50–69 → Watch, &lt;50 → Avoid.</p>
-    </details>
+    Companies and financials are fictional, shaped to resemble 10-K disclosures.
+    Scoring model in <code>score.js</code>, inputs in <code>data.js</code>, 28 tests in <code>test_score.mjs</code>.
   </footer>
 </div>
 
-<script>
-(() => {
-"use strict";
-const $=s=>document.querySelector(s);
-const W={fin:.25,growth:.20,mkt:.18,solv:.15,risk:.12,fit:.10};
-const FL=[["fin","Financial Health"],["growth","Growth Momentum"],["mkt","Marketing Intensity"],["solv","Solvency & Liquidity"],["risk","Risk Profile"],["fit","Strategic Fit"]];
+<script type="module">
+import { COMPANIES } from './data.js';
+import { scoreCompany, signals, tierOf, WEIGHTS, FACTOR_LABELS, DEFAULT_PROFILE } from './score.js';
 
-// illustrative accounts; factor scores 0-100
-const CO=[
-  {n:"Helios Cloud Systems",t:"NASDAQ: HLOS",sec:"Enterprise SaaS",fin:88,growth:92,mkt:80,solv:84,risk:78,fit:90,
-   sig:[["pos","Revenue +34% YoY; net retention 121% cited in MD&A"],["pos","R&D 22% of revenue — durable product moat"],["pos","SG&A up 28%, ad spend expansion signals active buying"],["neu","Concentration: top 10 customers = 31% of revenue"]]},
-  {n:"Meridian Retail Group",t:"NYSE: MRG",sec:"Omnichannel Retail",fin:74,growth:66,mkt:88,solv:70,risk:64,fit:78,
-   sig:[["pos","Marketing spend +19%; loyalty program scaling"],["pos","Comparable-store sales +6.2%"],["neg","Rising inventory; gross margin down 140bps"],["neu","Seasonal working-capital swings noted"]]},
-  {n:"Aster Biopharma",t:"NASDAQ: ASTB",sec:"Biotech",fin:52,growth:81,mkt:44,solv:48,risk:38,fit:60,
-   sig:[["pos","Pipeline expansion; two Phase III readouts pending"],["neg","Going-concern language softened but present"],["neg","Accumulated deficit widening; cash runway ~18mo"],["neu","Low marketing footprint — pre-commercial"]]},
-  {n:"Continental Freight Co.",t:"NYSE: CFRT",sec:"Logistics",fin:69,growth:54,mkt:58,solv:72,risk:66,fit:64,
-   sig:[["pos","Stable free cash flow; disciplined capex"],["neu","Freight volumes flat; pricing power modest"],["neg","Fuel-cost and labor risk factors emphasized"],["pos","Fleet modernization creates services demand"]]},
-  {n:"Northbridge Financial",t:"NYSE: NBF",sec:"Fintech",fin:82,growth:77,mkt:71,solv:80,risk:70,fit:83,
-   sig:[["pos","Fee income +23%; diversified revenue base"],["pos","Strong capital ratios well above requirements"],["neu","Regulatory scrutiny cited as ongoing risk"],["pos","Digital acquisition budget growing"]]},
-  {n:"Solstice Energy",t:"NYSE: SLST",sec:"Energy",fin:61,growth:47,mkt:40,solv:58,risk:50,fit:52,
-   sig:[["neu","Commodity-linked earnings volatility"],["neg","Elevated debt; covenant headroom narrowing"],["neg","Extensive environmental risk factors"],["pos","Renewables transition capex underway"]]},
-  {n:"Pinnacle Health Devices",t:"NASDAQ: PNHD",sec:"MedTech",fin:79,growth:73,mkt:76,solv:75,risk:72,fit:81,
-   sig:[["pos","Recurring consumables revenue 58% of total"],["pos","FDA clearances broadening addressable market"],["neu","Reimbursement policy dependence noted"],["pos","Commercial team expansion in filing"]]},
-  {n:"Vantage Media Holdings",t:"NASDAQ: VMH",sec:"Media",fin:55,growth:49,mkt:84,solv:52,risk:47,fit:58,
-   sig:[["pos","Ad revenue rebound in H2; strong marketing motion"],["neg","Legacy segment declining double digits"],["neg","Impairment charges; goodwill risk flagged"],["neu","Heavy content investment cycle"]]},
-  {n:"Cobalt Semiconductors",t:"NASDAQ: CBLT",sec:"Semiconductors",fin:85,growth:88,mkt:66,solv:82,risk:69,fit:87,
-   sig:[["pos","Design wins cited; backlog at record"],["pos","Gross margin expansion to 54%"],["neu","Cyclical demand risk acknowledged"],["neg","Customer concentration in top account 24%"]]},
-  {n:"Harbor Point Hospitality",t:"NYSE: HRBP",sec:"Hospitality",fin:46,growth:41,mkt:62,solv:44,risk:39,fit:48,
-   sig:[["neg","High leverage; interest coverage thin"],["neg","Occupancy recovery lagging pre-pandemic"],["neu","Marketing push to rebuild demand"],["neg","Multiple substantial-doubt risk factors"]]}
-];
+const $ = s => document.querySelector(s);
+const weights = { ...WEIGHTS };
+let filter = 'all', selected = null;
 
-CO.forEach(c=>{ c.score=Math.round(FL.reduce((s,[k])=>s+c[k]*W[k],0)); });
-CO.sort((a,b)=>b.score-a.score);
-const tier=s=> s>=70?"pursue": s>=50?"watch":"avoid";
-const tierLabel={pursue:"Pursue",watch:"Watch",avoid:"Avoid"};
-const tierColor={pursue:"var(--pursue)",watch:"var(--watch)",avoid:"var(--avoid)"};
-const tierIcon={pursue:"▲",watch:"◆",avoid:"▼"};
+const TIER_COLOR = { pursue:'var(--pursue)', watch:'var(--watch)', avoid:'var(--avoid)' };
+const TIER_ICON  = { pursue:'▲', watch:'◆', avoid:'▼' };
 
-// tiles
-(function(){
-  const p=CO.filter(c=>tier(c.score)==="pursue").length;
-  const a=CO.filter(c=>tier(c.score)==="avoid").length;
-  const avg=Math.round(CO.reduce((s,c)=>s+c.score,0)/CO.length);
-  const top=CO[0];
-  $("#tiles").innerHTML=`
-    <div class="card tile"><div class="l">Accounts analyzed</div><div class="v">${CO.length}</div></div>
-    <div class="card tile"><div class="l">Median fit score</div><div class="v">${avg}<small>/100</small></div></div>
-    <div class="card tile pursue"><div class="l">Pursue tier</div><div class="v">${p}</div></div>
-    <div class="card tile avoid"><div class="l">Avoid tier</div><div class="v">${a}</div></div>`;
-})();
-
-let filter="all", selected=CO[0].n;
-
-function renderRows(){
-  const list=CO.filter(c=>filter==="all"||tier(c.score)===filter);
-  $("#rows").innerHTML=list.map((c,i)=>{
-    const tk=tier(c.score);
-    return `<button class="rowc" role="option" aria-selected="${c.n===selected}" data-n="${c.n}">
-      <span class="rank">${CO.indexOf(c)+1}</span>
-      <span class="co"><span class="nm">${c.n}</span><br><span class="mt">${c.sec} · ${c.t}</span></span>
-      <span class="scorebar"><span class="track"><span class="fill" style="width:${c.score}%;background:${tierColor[tk]}"></span></span><span class="scoreN">${c.score}</span></span>
-      <span class="tier ${tk}">${tierIcon[tk]} ${tierLabel[tk]}</span>
-    </button>`;
-  }).join("")|| `<div style="padding:24px;color:var(--muted)">No accounts in this tier.</div>`;
-  $("#rows").querySelectorAll(".rowc").forEach(b=>b.addEventListener("click",()=>{selected=b.dataset.n;renderRows();renderDetail();}));
+function scoreAll(){
+  const sum = Object.values(weights).reduce((a,b)=>a+b,0) || 1;
+  return COMPANIES.map(c => {
+    const s = scoreCompany(c, DEFAULT_PROFILE);
+    // re-blend with the live weights, normalised so they always total 1
+    let composite = 0;
+    for (const k of Object.keys(weights)) composite += s.factors[k] * (weights[k]/sum);
+    return { ...s, score: Math.round(composite), tier: tierOf(composite) };
+  }).sort((a,b)=>b.score-a.score);
 }
 
-function renderDetail(){
-  const c=CO.find(x=>x.n===selected)||CO[0];
-  const tk=tier(c.score);
-  const rec={
-    pursue:"High-conviction target. Financials and growth support a full-court outreach — lead with value tied to their expansion signals.",
-    watch:"Qualified but mixed. Monitor next filing; engage on a specific pain surfaced in their risk factors before committing resources.",
-    avoid:"De-prioritize. Solvency or risk-factor signals outweigh upside — revisit only on a material improvement in the next 10-K."
-  }[tk];
-  $("#detail").innerHTML=`
-    <div class="dh"><div><h3>${c.n}</h3></div><span class="ticker">${c.t}</span></div>
-    <div class="bigscore"><b style="color:${tierColor[tk]}">${c.score}</b><span>/ 100 · ${c.sec}</span>
-      <span class="tier ${tk}" style="margin-left:auto">${tierIcon[tk]} ${tierLabel[tk]}</span></div>
-    <div class="rec" style="border-left-color:${tierColor[tk]}">${rec}</div>
-    <div class="factors">${FL.map(([k,label])=>`
-      <div class="factor"><div class="fl"><span class="fn">${label}</span><span class="fv">${c[k]}</span></div>
-      <div class="ft"><div class="ff" style="width:${c[k]}%"></div></div></div>`).join("")}</div>
-    <div class="signals"><div class="st">Signals from the 10-K</div>
-      ${c.sig.map(([kind,tx])=>`<div class="sig ${kind}"><span class="ic">${kind==="pos"?"+":kind==="neg"?"−":"·"}</span><span class="tx">${tx}</span></div>`).join("")}</div>`;
+function render(){
+  const scored = scoreAll();
+  if (!selected || !scored.some(c=>c.name===selected)) selected = scored[0].name;
+  window.__scored = scored;
+
+  const n = t => scored.filter(c=>c.tier===t).length;
+  const median = (()=>{ const v=scored.map(c=>c.score).sort((a,b)=>a-b);
+    const m=Math.floor(v.length/2);
+    return v.length%2 ? v[m] : Math.round((v[m-1]+v[m])/2); })();
+  $('#tiles').innerHTML = [
+    ['', scored.length, 'Accounts analysed'],
+    ['', median + '<small style="font-size:13px;color:var(--text-secondary)">/100</small>', 'Median fit score'],
+    ['pursue', n('pursue'), 'Pursue tier'],
+    ['avoid', n('avoid'), 'Avoid tier'],
+  ].map(([cls,v,l])=>`<div class="tile ${cls}"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+
+  $('#chips').innerHTML = ['all','pursue','watch','avoid'].map(t=>
+    `<button class="chip ${filter===t?'active':''}" data-t="${t}">${t[0].toUpperCase()+t.slice(1)}</button>`).join('');
+
+  const list = scored.filter(c=>filter==='all'||c.tier===filter);
+  $('#rows').innerHTML = list.length ? list.map(c=>`
+    <button class="rowc" role="option" aria-selected="${c.name===selected}" data-n="${c.name}">
+      <span class="rank">${scored.indexOf(c)+1}</span>
+      <span><span class="nm">${c.name}</span><br><span class="mt">${c.sector} · ${c.ticker}</span></span>
+      <span><span class="track"><span class="fill" style="width:${c.score}%;background:${TIER_COLOR[c.tier]}"></span></span><span class="scoreN">${c.score}</span></span>
+      <span class="tier ${c.tier}">${TIER_ICON[c.tier]} ${c.tier[0].toUpperCase()+c.tier.slice(1)}</span>
+    </button>`).join('') : `<div style="padding:20px;color:var(--text-muted)">No accounts in this tier.</div>`;
+
+  renderDetail(scored.find(c=>c.name===selected));
+  renderWeights();
 }
 
-document.querySelectorAll(".filters button").forEach(b=>b.addEventListener("click",()=>{
-  document.querySelectorAll(".filters button").forEach(x=>x.setAttribute("aria-pressed","false"));
-  b.setAttribute("aria-pressed","true"); filter=b.dataset.f;
-  const vis=CO.filter(c=>filter==="all"||tier(c.score)===filter);
-  if(vis.length && !vis.find(c=>c.n===selected)) selected=vis[0].n;
-  renderRows();renderDetail();
-}));
+function renderDetail(c){
+  const sig = signals(c);
+  const fin = [
+    ['Revenue', `$${c.revenueMillions.toLocaleString()}M`],
+    ['Revenue growth', `${c.revenueGrowth}%`],
+    ['Gross margin', `${c.grossMargin}%`],
+    ['Operating margin', `${c.operatingMargin}%`],
+    ['FCF margin', `${c.fcfMargin}%`],
+    ['Net retention', `${c.netRetention}%`],
+    ['SG&A % revenue', `${c.sgaPctRevenue}%`],
+    ['SG&A growth', `${c.sgaGrowth}%`],
+    ['Debt / EBITDA', `${c.debtToEbitda}×`],
+    ['Interest coverage', `${c.interestCoverage}×`],
+    ['Current ratio', `${c.currentRatio}`],
+    ['Cash runway', `${c.cashRunwayMonths} mo`],
+    ['Risk factors', `${c.riskFactorCount}`],
+    ['Top-10 concentration', `${c.customerConcentration}%`],
+  ];
+  $('#detail').innerHTML = `
+    <h2 style="font-size:16px;margin-bottom:2px">${c.name}</h2>
+    <div class="mt" style="margin-bottom:12px">${c.sector} · ${c.ticker} —
+      <span style="color:${TIER_COLOR[c.tier]};font-weight:700">${c.tier.toUpperCase()} ${c.score}/100</span></div>
+    <h2>Factor scores</h2>
+    ${Object.keys(FACTOR_LABELS).map(k=>`
+      <div class="fbar"><div class="n">${FACTOR_LABELS[k]}</div>
+        <div class="t"><div class="fill" style="width:${c.factors[k]}%;background:var(--accent)"></div></div>
+        <div class="v">${c.factors[k]}</div></div>`).join('')}
+    <h2 style="margin-top:14px">Signals <span style="font-weight:400;color:var(--text-muted);font-size:11.5px">— generated from the financials</span></h2>
+    ${sig.map(s=>`<div class="sig ${s.kind}"><span class="k">${s.kind==='pos'?'+':s.kind==='neg'?'−':'•'}</span><span>${s.text}</span></div>`).join('')}
+    <h2 style="margin-top:14px">Filing inputs</h2>
+    <div class="fin">${fin.map(([k,v])=>`<div class="k">${k}</div><div class="v">${v}</div>`).join('')}</div>`;
+}
 
-renderRows();renderDetail();
-})();
+function renderWeights(){
+  const sum = Object.values(weights).reduce((a,b)=>a+b,0);
+  $('#weights').innerHTML = Object.keys(FACTOR_LABELS).map(k=>`
+    <div class="wrow"><label for="w-${k}">${FACTOR_LABELS[k]}</label>
+      <input id="w-${k}" type="range" min="0" max="40" value="${Math.round(weights[k]*100)}" data-k="${k}">
+      <span class="pct">${Math.round(weights[k]/sum*100)}%</span></div>`).join('');
+  $('#wnote').textContent = `Weights are normalised to 100%. Raw total: ${Math.round(sum*100)}%.`;
+}
+
+document.addEventListener('click', e=>{
+  const chip = e.target.closest('.chip');
+  if (chip){ filter = chip.dataset.t; render(); return; }
+  const row = e.target.closest('.rowc');
+  if (row){ selected = row.dataset.n; render(); }
+});
+document.addEventListener('input', e=>{
+  const k = e.target.dataset?.k;
+  if (!k) return;
+  weights[k] = Number(e.target.value)/100;
+  render();
+});
+
+render();
 </script>
+</body>
+</html>
