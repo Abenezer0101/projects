@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weather</title>
+<style>
+  :root{
+    color-scheme:light;
+    --plane:#f6f7f9; --surface-1:#fcfcfb; --border:rgba(12,18,32,.12);
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#82817c;
+    --grid:rgba(12,18,32,.09); --accent:#2a78d6; --bad:#e34948;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark;
+    --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --grid:rgba(255,255,255,.11); --accent:#3987e5; --bad:#e66767;
+  }}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--plane);color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 20px 70px}
+  h1{font-size:26px;margin:0 0 4px;font-weight:800;letter-spacing:-.02em}
+  .lede{color:var(--text-secondary);font-size:13.5px;margin:0 0 20px}
+  form{display:flex;gap:8px;margin-bottom:8px}
+  input[type=text]{flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:9px;
+    background:var(--surface-1);color:var(--text-primary);font:inherit;font-size:15px}
+  input:focus{outline:2px solid var(--accent);outline-offset:1px}
+  button{font:inherit;cursor:pointer;border-radius:9px;border:1px solid var(--border);
+    background:var(--surface-1);color:var(--text-primary);padding:10px 16px;font-size:14px}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+  .unit{display:flex;gap:6px;margin-bottom:14px}
+  .chip{border:1px solid var(--border);background:var(--surface-1);color:var(--text-secondary);
+    padding:4px 12px;border-radius:99px;font-size:12.5px;cursor:pointer}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:13px;
+    padding:18px;margin-bottom:14px}
+  .msg{font-size:13.5px;padding:10px 14px;border-radius:9px;margin-bottom:14px;display:none}
+  .msg.show{display:block}
+  .msg.err{background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad);
+    border:1px solid color-mix(in srgb,var(--bad) 30%,transparent)}
+  .msg.info{background:var(--surface-1);border:1px solid var(--border);color:var(--text-secondary)}
+  .picker button{display:block;width:100%;text-align:left;margin-bottom:6px}
+  .now{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .now .icon{font-size:54px;line-height:1}
+  .now .temp{font-size:44px;font-weight:700;letter-spacing:-.03em}
+  .now .cond{font-size:15px;color:var(--text-secondary)}
+  .now .place{font-size:13px;color:var(--text-muted)}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
+    gap:10px;margin-top:16px}
+  .stat{background:var(--plane);border-radius:9px;padding:9px 11px}
+  .stat .l{font-size:11px;color:var(--text-muted)} .stat .v{font-size:16px;font-weight:600}
+  .days{display:grid;gap:2px}
+  .day{display:grid;grid-template-columns:104px 26px 1fr 46px;gap:10px;align-items:center;
+    padding:7px 2px;border-bottom:1px solid var(--border);font-size:13.5px}
+  .day:last-child{border-bottom:none}
+  .day .nm{color:var(--text-secondary);white-space:nowrap}
+  .day .rng{display:flex;align-items:center;gap:8px}
+  .day .bar{flex:1;height:6px;background:var(--grid);border-radius:3px;position:relative}
+  .day .seg{position:absolute;height:100%;border-radius:3px;background:var(--accent)}
+  .day .t{width:84px;text-align:right;font-variant-numeric:tabular-nums}
+  .day .rain{font-size:11.5px;color:var(--text-muted);width:42px;text-align:right}
+  .hours{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+  .hour{flex:0 0 auto;text-align:center;font-size:12px;color:var(--text-secondary);min-width:52px}
+  .hour .i{font-size:19px} .hour .t{font-weight:600;color:var(--text-primary);font-size:13px}
+  details{margin-top:6px} summary{cursor:pointer;font-size:13px;color:var(--text-secondary)}
+  .keyrow{display:flex;gap:8px;margin-top:10px}
+  .keyrow input{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
+    background:var(--plane);color:var(--text-primary);font:inherit;font-size:13px}
+  .note{font-size:12px;color:var(--text-muted);margin-top:8px}
+  footer{margin-top:22px;padding-top:14px;border-top:1px solid var(--border);
+    font-size:12px;color:var(--text-muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Weather</h1>
+  <p class="lede">Search any place on earth. Powered by Open-Meteo, which needs
+  <strong>no API key</strong> — so there is nothing to leak and nothing to commit.</p>
+
+  <form id="form">
+    <input type="text" id="q" placeholder="Atlanta, Tokyo, Reykjavík…"
+           autocomplete="off" aria-label="Place name">
+    <button type="submit" class="primary" id="go">Search</button>
+  </form>
+  <div class="unit">
+    <button class="chip active" data-u="celsius">°C</button>
+    <button class="chip" data-u="fahrenheit">°F</button>
+  </div>
+
+  <div class="msg" id="msg" role="status" aria-live="polite"></div>
+  <div class="card picker" id="picker" hidden></div>
+  <div id="out"></div>
+
+  <div class="card">
+    <details>
+      <summary>Optional: use a keyed provider instead</summary>
+      <p class="note">Open-Meteo needs no key, so this is only here to demonstrate the pattern.
+      A key entered below is held in <code>sessionStorage</code> — it dies when the tab closes,
+      never touches <code>localStorage</code> or disk, and is never written to a file that
+      could be committed.</p>
+      <div class="keyrow">
+        <input type="password" id="key" placeholder="API key" autocomplete="off" aria-label="API key">
+        <button id="saveKey">Save</button>
+        <button id="clearKey">Clear</button>
+      </div>
+      <div class="note" id="keyState"></div>
+    </details>
+  </div>
+
+  <footer>
+    Data: <a href="https://open-meteo.com" style="color:var(--accent)">Open-Meteo</a> (free, keyless).
+    Logic in <code>weather.js</code>, 47 tests in <code>test_weather.mjs</code>.
+  </footer>
+</div>
+
+<script type="module">
+import { geocodeUrl, forecastUrl, parsePlaces, parseForecast,
+         classifyError, saveKey, loadKey, clearKey, maskKey } from './weather.js';
+
+const $ = id => document.getElementById(id);
+let unit = 'celsius', lastPlace = null;
+
+function say(text, kind='info'){
+  const m = $('msg');
+  m.textContent = text;
+  m.className = `msg show ${kind}`;
+  if (!text) m.className = 'msg';
+}
+function clearMsg(){ $('msg').className = 'msg'; $('msg').textContent = ''; }
+
+async function getJSON(url){
+  const key = loadKey();
+  const headers = key ? { 'X-API-Key': key } : {};
+  let res;
+  try {
+    res = await fetch(url, { headers });
+  } catch (e) {
+    throw new Error(classifyError(e));
+  }
+  if (!res.ok) throw new Error(classifyError(null, res.status));
+  return res.json();
+}
+
+$('form').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const q = $('q').value.trim();
+  $('picker').hidden = true; $('out').innerHTML = '';
+  if (!q) { say('Enter a place name.', 'err'); return; }
+  say('Searching…');
+  $('go').disabled = true;
+  try {
+    const places = parsePlaces(await getJSON(geocodeUrl(q)));
+    if (!places.length) { say(`No place found matching “${q}”.`, 'err'); return; }
+    if (places.length === 1) { await show(places[0]); return; }
+    clearMsg();
+    $('picker').hidden = false;
+    $('picker').innerHTML = `<div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">
+      ${places.length} matches — pick one:</div>` +
+      places.map((p,i)=>`<button data-i="${i}">${p.label}</button>`).join('');
+    $('picker').querySelectorAll('button').forEach(b =>
+      b.onclick = () => { $('picker').hidden = true; show(places[Number(b.dataset.i)]); });
+  } catch (e) {
+    say(e.message, 'err');
+  } finally {
+    $('go').disabled = false;
+  }
+});
+
+async function show(place){
+  lastPlace = place;
+  say(`Loading weather for ${place.label}…`);
+  try {
+    const data = parseForecast(await getJSON(forecastUrl({ ...place, unit })));
+    clearMsg();
+    render(place, data);
+  } catch (e) {
+    say(e.message, 'err');
+  }
+}
+
+function render(place, d){
+  const u = d.units.temperature;
+  const dayName = iso => new Date(iso + 'T12:00').toLocaleDateString(undefined,{weekday:'short', month:'short', day:'numeric'});
+  const hourName = iso => new Date(iso).toLocaleTimeString(undefined,{hour:'numeric'});
+  const lo = Math.min(...d.days.map(x=>x.low)), hi = Math.max(...d.days.map(x=>x.high));
+  const span = (hi - lo) || 1;
+
+  $('out').innerHTML = `
+    <div class="card">
+      <div class="now">
+        <div class="icon">${d.current.icon}</div>
+        <div>
+          <div class="temp">${d.current.temperature}${u}</div>
+          <div class="cond">${d.current.text} · feels like ${d.current.feelsLike}${u}</div>
+          <div class="place">${place.label} · ${d.timezone}</div>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="l">Humidity</div><div class="v">${d.current.humidity}%</div></div>
+        <div class="stat"><div class="l">Wind</div><div class="v">${d.current.windSpeed} ${d.units.wind}</div></div>
+        <div class="stat"><div class="l">Precipitation</div><div class="v">${d.current.precipitation} mm</div></div>
+        <div class="stat"><div class="l">Sunrise</div><div class="v">${(d.days[0].sunrise||'').slice(11,16)}</div></div>
+        <div class="stat"><div class="l">Sunset</div><div class="v">${(d.days[0].sunset||'').slice(11,16)}</div></div>
+      </div>
+    </div>
+
+    ${d.hours.length ? `<div class="card">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px">Next ${d.hours.length} hours</div>
+      <div class="hours">${d.hours.map(h=>`<div class="hour">
+        <div>${hourName(h.time)}</div><div class="i">${h.icon}</div>
+        <div class="t">${h.temperature}°</div>
+        <div>${h.rainChance != null ? h.rainChance + '%' : ''}</div>
+      </div>`).join('')}</div></div>` : ''}
+
+    <div class="card">
+      <div style="font-size:14px;font-weight:600;margin-bottom:8px">7-day forecast</div>
+      <div class="days">${d.days.map(x=>{
+        const left = (x.low - lo) / span * 100, width = Math.max((x.high - x.low) / span * 100, 4);
+        return `<div class="day">
+          <div class="nm">${dayName(x.date)}</div>
+          <div title="${x.text}">${x.icon}</div>
+          <div class="rng"><span class="t" style="width:auto;color:var(--text-muted)">${x.low}°</span>
+            <span class="bar"><span class="seg" style="left:${left}%;width:${width}%"></span></span>
+            <span class="t" style="width:auto">${x.high}°</span></div>
+          <div class="rain">${x.rainChance != null ? x.rainChance + '%' : ''}</div>
+        </div>`;}).join('')}</div>
+    </div>`;
+  window.__weather = { place, data: d };
+}
+
+document.querySelectorAll('.chip').forEach(c => c.onclick = () => {
+  unit = c.dataset.u;
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+  c.classList.add('active');
+  if (lastPlace) show(lastPlace);
+});
+
+function keyState(){
+  const k = loadKey();
+  $('keyState').textContent = k
+    ? `Key held for this tab only: ${maskKey(k)}`
+    : 'No key stored. Open-Meteo does not need one.';
+}
+$('saveKey').onclick = () => {
+  const ok = saveKey($('key').value);
+  $('key').value = '';
+  keyState();
+  say(ok ? 'Key saved for this tab.' : 'Key cleared.', 'info');
+};
+$('clearKey').onclick = () => { clearKey(); keyState(); say('Key cleared.', 'info'); };
+keyState();
+</script>
+</body>
+</html>
