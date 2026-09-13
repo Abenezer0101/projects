@@ -23,6 +23,7 @@ Data, analytics, and application builds.
 | [PDF Study Kit](./pdf-study-kit/) | Python, FastAPI, Docker | PDF → study material offline: TF-IDF, extractive summarisation, CLI + REST API. |
 | [Expense Tracker](./expense-tracker/) | JS | CRUD app with versioned localStorage, budgets, undo, and CSV round-trip. |
 | [Weather](./weather-app/) | JS | Open-Meteo forecast app, keyless; 47 offline tests + 17 browser tests. |
+| [Markdown Notes](./markdown-notes/) | JS | Markdown renderer written from scratch, XSS-safe by construction; 63 + 19 tests. |
 | [Sales Ops Dashboard](./sales-ops-dashboard/) | JS | Sales operations dashboard. |
 | [Impossible Gift Machine](./gift-app/) | JS | Gift-picking app. |
 
