@@ -25,7 +25,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 ## Week 3 — Applications & End-to-End
 - [x] **Day 15** — Expense tracker web app (localStorage, charts) *(done)*
 - [x] **Day 16** — Weather app (Open-Meteo, keyless; key-handling pattern demonstrated for an optional provider) *(done)*
-- [ ] **Day 17** — Markdown notes app with live preview
+- [x] **Day 17** — Markdown notes app with live preview *(done)*
 - [ ] **Day 18** — Data-driven quiz app
 - [ ] **Day 19** — Pomodoro / focus timer with session stats
 - [ ] **Day 20** — URL shortener (Flask + SQLite) — real backend

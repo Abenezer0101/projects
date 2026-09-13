@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Markdown Notes</title>
+<style>
+  :root{
+    color-scheme:light;
+    --plane:#f6f7f9; --surface-1:#fcfcfb; --border:rgba(12,18,32,.12);
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#82817c;
+    --code-bg:#f0f2f5; --accent:#2a78d6; --bad:#e34948;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    color-scheme:dark;
+    --plane:#0f0f0e; --surface-1:#1a1a19; --border:rgba(255,255,255,.14);
+    --text-primary:#fff; --text-secondary:#c3c2b7; --text-muted:#8f8e86;
+    --code-bg:#23231f; --accent:#3987e5; --bad:#e66767;
+  }}
+  *{box-sizing:border-box} html,body{margin:0;height:100%}
+  body{background:var(--plane);color:var(--text-primary);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55;
+    display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  header{padding:12px 18px;border-bottom:1px solid var(--border);
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface-1)}
+  header h1{font-size:15px;margin:0;font-weight:700;letter-spacing:-.01em}
+  header .grow{flex:1}
+  button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--border);
+    background:var(--surface-1);color:var(--text-primary);padding:6px 12px;font-size:13px}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primary:hover{color:#fff;opacity:.92}
+  input[type=search]{padding:6px 10px;border:1px solid var(--border);border-radius:8px;
+    background:var(--plane);color:var(--text-primary);font:inherit;font-size:13px;width:160px}
+  main{flex:1;display:grid;grid-template-columns:210px 1fr 1fr;min-height:0}
+  @media(max-width:820px){main{grid-template-columns:1fr}
+    #list{display:none} #preview{display:none} body.show-preview #editor{display:none}
+    body.show-preview #preview{display:block}}
+  #list{border-right:1px solid var(--border);overflow-y:auto;background:var(--surface-1)}
+  .note{padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer}
+  .note:hover{background:var(--plane)}
+  .note.active{background:var(--plane);border-left:3px solid var(--accent);padding-left:11px}
+  .note .t{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .note .m{font-size:11px;color:var(--text-muted);margin-top:2px}
+  #editor{border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+  textarea{flex:1;width:100%;border:none;outline:none;resize:none;padding:18px 20px;
+    background:var(--plane);color:var(--text-primary);
+    font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:13.5px;line-height:1.65}
+  #preview{overflow-y:auto;padding:18px 22px;background:var(--plane)}
+  .bar{padding:6px 14px;border-top:1px solid var(--border);font-size:11.5px;
+    color:var(--text-muted);background:var(--surface-1);display:flex;gap:14px}
+  /* rendered markdown */
+  #preview h1,#preview h2,#preview h3{margin:.7em 0 .35em;line-height:1.25}
+  #preview h1{font-size:24px} #preview h2{font-size:19px} #preview h3{font-size:16px}
+  #preview p{margin:.6em 0}
+  #preview code{background:var(--code-bg);padding:1px 5px;border-radius:4px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em}
+  #preview pre{background:var(--code-bg);padding:12px 14px;border-radius:8px;overflow-x:auto}
+  #preview pre code{background:none;padding:0}
+  #preview blockquote{margin:.6em 0;padding:2px 14px;border-left:3px solid var(--border);
+    color:var(--text-secondary)}
+  #preview table{border-collapse:collapse;margin:.6em 0;font-size:13.5px;width:100%}
+  #preview th,#preview td{border:1px solid var(--border);padding:5px 9px;text-align:left}
+  #preview th{background:var(--surface-1)}
+  #preview hr{border:none;border-top:1px solid var(--border);margin:1.1em 0}
+  #preview a{color:var(--accent)}
+  #preview img{max-width:100%;border-radius:6px}
+  #preview li.task{list-style:none;margin-left:-20px}
+  #preview ul,#preview ol{padding-left:22px}
+  .empty{color:var(--text-muted);font-size:13px;padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>Markdown Notes</h1>
+  <button id="new" class="primary">New</button>
+  <input type="search" id="search" placeholder="Search notes…" aria-label="Search notes">
+  <span class="grow"></span>
+  <button id="togglePreview" hidden>Preview</button>
+  <button id="export">Export .md</button>
+  <button id="delete">Delete</button>
+</header>
+
+<main>
+  <div id="list" role="listbox" aria-label="Notes"></div>
+  <div id="editor">
+    <textarea id="text" spellcheck="true" aria-label="Markdown source"
+      placeholder="# Start typing&#10;&#10;Markdown renders live on the right."></textarea>
+    <div class="bar" id="stats"></div>
+  </div>
+  <div id="preview" aria-live="polite"></div>
+</main>
+
+<script type="module">
+import { render, stats, deriveTitle } from './markdown.js';
+
+const STORE = 'markdown-notes';
+const VERSION = 1;
+const $ = id => document.getElementById(id);
+
+const SAMPLE = `# Welcome
+
+A notes app with a **live preview** and a Markdown renderer written from
+scratch — no library, and *safe by construction*.
+
+## Why that matters
+
+Rendering Markdown means putting untrusted text into \`innerHTML\`. This one
+escapes first, then adds markup, so none of these can execute:
+
+- \`<script>alert(1)<\/script>\`
+- \`[click](javascript:alert(1))\`
+- \`<img src=x onerror=alert(1)>\`
+
+Try pasting them in.
+
+## Supported
+
+| Feature | Syntax |
+| --- | --- |
+| Heading | \`# text\` |
+| Bold | \`**text**\` |
+| Code | backticks |
+
+- [x] Headings, lists, tables
+- [x] Fenced code blocks
+- [ ] Your next note
+
+> Everything is stored in your browser.
+`;
+
+let state = load();
+let currentId = state.notes[0]?.id ?? null;
+let searchTerm = '';
+
+function load(){
+  let raw;
+  try { raw = localStorage.getItem(STORE); } catch { return seed(); }
+  if (!raw) return seed();
+  try {
+    const d = JSON.parse(raw);
+    const notes = Array.isArray(d?.notes) ? d.notes.filter(n => n && typeof n.body === 'string') : [];
+    return notes.length ? { version: VERSION, notes } : seed();
+  } catch { return seed(); }           // corrupt storage starts clean, never throws
+}
+function seed(){
+  return { version: VERSION, notes: [{ id: id(), body: SAMPLE, updated: Date.now() }] };
+}
+function id(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function persist(){
+  try { localStorage.setItem(STORE, JSON.stringify({ ...state, version: VERSION })); }
+  catch { /* private mode: keep working in memory */ }
+}
+
+const current = () => state.notes.find(n => n.id === currentId) || null;
+
+function renderList(){
+  const term = searchTerm.trim().toLowerCase();
+  const shown = term
+    ? state.notes.filter(n => n.body.toLowerCase().includes(term))
+    : state.notes;
+  $('list').innerHTML = shown.length ? shown
+    .slice().sort((a,b) => b.updated - a.updated)
+    .map(n => `<div class="note ${n.id===currentId?'active':''}" data-id="${n.id}" role="option"
+        aria-selected="${n.id===currentId}">
+      <div class="t"></div><div class="m">${new Date(n.updated).toLocaleDateString()} · ${stats(n.body).words} words</div>
+    </div>`).join('')
+    : '<div class="empty">No notes match “<span class="q"></span>”.</div>';
+  // the search term is user text going into innerHTML, so it is set as
+  // textContent -- interpolating it directly is an injection hole
+  const q = $('list').querySelector('.q');
+  if (q) q.textContent = searchTerm;
+  // titles are set as textContent so a note titled <script> can never inject
+  $('list').querySelectorAll('.note').forEach(el => {
+    const n = state.notes.find(x => x.id === el.dataset.id);
+    el.querySelector('.t').textContent = deriveTitle(n.body);
+  });
+}
+
+function renderPreview(){
+  const n = current();
+  const body = n ? n.body : '';
+  $('preview').innerHTML = render(body);
+  const s = stats(body);
+  $('stats').innerHTML =
+    `<span>${s.words} words</span><span>${s.characters} chars</span>` +
+    `<span>${s.lines} lines</span><span>~${s.readingMinutes} min read</span>`;
+  window.__notes = { count: state.notes.length, currentId, body, html: $('preview').innerHTML };
+}
+
+function renderAll(){ renderList(); renderPreview(); }
+
+function select(nid){
+  currentId = nid;
+  const n = current();
+  $('text').value = n ? n.body : '';
+  renderAll();
+}
+
+$('text').addEventListener('input', () => {
+  const n = current();
+  if (!n) return;
+  n.body = $('text').value;
+  n.updated = Date.now();
+  persist();
+  renderAll();
+});
+
+$('list').addEventListener('click', e => {
+  const el = e.target.closest('.note');
+  if (el) select(el.dataset.id);
+});
+
+$('new').addEventListener('click', () => {
+  const n = { id: id(), body: '# Untitled\n\n', updated: Date.now() };
+  state.notes.unshift(n);
+  persist();
+  select(n.id);
+  $('text').focus();
+  $('text').setSelectionRange($('text').value.length, $('text').value.length);
+});
+
+$('delete').addEventListener('click', () => {
+  const n = current();
+  if (!n) return;
+  if (!confirm(`Delete “${deriveTitle(n.body)}”? This cannot be undone.`)) return;
+  state.notes = state.notes.filter(x => x.id !== n.id);
+  if (!state.notes.length) state = seed();
+  persist();
+  select(state.notes[0].id);
+});
+
+$('export').addEventListener('click', () => {
+  const n = current();
+  if (!n) return;
+  const blob = new Blob([n.body], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = deriveTitle(n.body).replace(/[^\w\-. ]+/g, '_').slice(0, 60) + '.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+$('search').addEventListener('input', e => { searchTerm = e.target.value; renderList(); });
+
+// Ctrl/Cmd+S is muscle memory; everything already saves, so just acknowledge it
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+    e.preventDefault();
+    persist();
+    const b = $('export');
+    const was = b.textContent;
+    b.textContent = 'Saved';
+    setTimeout(() => { b.textContent = was; }, 900);
+  }
+});
+
+// narrow screens swap between editor and preview
+const mq = window.matchMedia('(max-width: 820px)');
+function applyLayout(){
+  $('togglePreview').hidden = !mq.matches;
+  if (!mq.matches) document.body.classList.remove('show-preview');
+}
+mq.addEventListener('change', applyLayout);
+$('togglePreview').addEventListener('click', () => {
+  document.body.classList.toggle('show-preview');
+  $('togglePreview').textContent = document.body.classList.contains('show-preview') ? 'Edit' : 'Preview';
+});
+applyLayout();
+
+select(currentId);
+</script>
+</body>
+</html>
