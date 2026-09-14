@@ -1,0 +1,52 @@
+State,StateCode,Region,Population2020,MedianHouseholdIncome
+Alabama,AL,South,5024279,59609
+Alaska,AK,West,733391,86370
+Arizona,AZ,West,7151502,72581
+Arkansas,AR,South,3011524,56335
+California,CA,West,39538223,91905
+Colorado,CO,West,5773714,87598
+Connecticut,CT,Northeast,3605944,90213
+Delaware,DE,South,989948,79325
+District of Columbia,DC,South,689545,101722
+Florida,FL,South,21538187,67917
+Georgia,GA,South,10711908,71355
+Hawaii,HI,West,1455271,92458
+Idaho,ID,West,1839106,70214
+Illinois,IL,Midwest,12812508,78433
+Indiana,IN,Midwest,6785528,67173
+Iowa,IA,Midwest,3190369,70571
+Kansas,KS,Midwest,2937880,69747
+Kentucky,KY,South,4505836,60183
+Louisiana,LA,South,4657757,57852
+Maine,ME,Northeast,1362359,68251
+Maryland,MD,South,6177224,98461
+Massachusetts,MA,Northeast,7029917,96505
+Michigan,MI,Midwest,10077331,68505
+Minnesota,MN,Midwest,5706494,84313
+Mississippi,MS,South,2961279,52719
+Missouri,MO,Midwest,6154913,65920
+Montana,MT,West,1084225,66341
+Nebraska,NE,Midwest,1961504,71722
+Nevada,NV,West,3104614,71646
+New Hampshire,NH,Northeast,1377529,90845
+New Jersey,NJ,Northeast,9288994,96346
+New Mexico,NM,West,2117522,58722
+New York,NY,Northeast,20201249,81386
+North Carolina,NC,South,10439388,66186
+North Dakota,ND,Midwest,779094,73959
+Ohio,OH,Midwest,11799448,66990
+Oklahoma,OK,South,3959353,61364
+Oregon,OR,West,4237256,76632
+Pennsylvania,PA,Northeast,13002700,73170
+Rhode Island,RI,Northeast,1097379,81370
+South Carolina,SC,South,5118425,63623
+South Dakota,SD,Midwest,886667,69457
+Tennessee,TN,South,6910840,64035
+Texas,TX,South,29145505,73035
+Utah,UT,West,3271616,86833
+Vermont,VT,Northeast,643077,74014
+Virginia,VA,South,8631393,87249
+Washington,WA,West,7705281,90325
+West Virginia,WV,South,1793716,55217
+Wisconsin,WI,Midwest,5893718,72458
+Wyoming,WY,West,576851,72415

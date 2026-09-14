@@ -26,7 +26,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 - [x] **Day 15** — Expense tracker web app (localStorage, charts) *(done)*
 - [x] **Day 16** — Weather app (Open-Meteo, keyless; key-handling pattern demonstrated for an optional provider) *(done)*
 - [x] **Day 17** — Markdown notes app with live preview *(done)*
-- [ ] **Day 18** — Data-driven quiz app
+- [x] **Day 18** — Data-driven quiz app *(done)*
 - [ ] **Day 19** — Pomodoro / focus timer with session stats
 - [ ] **Day 20** — URL shortener (Flask + SQLite) — real backend
 - [ ] **Day 21** — Capstone: small full-stack CRUD (Flask + SQLite + dashboard) tying DB + analytics + UI together, plus a portfolio landing page linking every project
