@@ -25,6 +25,7 @@ Data, analytics, and application builds.
 | [Weather](./weather-app/) | JS | Open-Meteo forecast app, keyless; 47 offline tests + 17 browser tests. |
 | [Markdown Notes](./markdown-notes/) | JS | Markdown renderer written from scratch, XSS-safe by construction; 63 + 19 tests. |
 | [Calibration Quiz](./quiz-app/) | JS | Quiz generated from real data; scores confidence with a Brier score. 36 + 18 tests. |
+| [Focus Timer](./focus-timer/) | JS | Pomodoro that reads the wall clock, not ticks; a hidden tab costs a naive timer 593s. 50 + 26 tests. |
 | [Sales Ops Dashboard](./sales-ops-dashboard/) | JS | Sales operations dashboard. |
 | [Impossible Gift Machine](./gift-app/) | JS | Gift-picking app. |
 

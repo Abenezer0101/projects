@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Focus Timer</title>
+<style>
+  :root{color-scheme:light;
+    --plane:#f6f7f9;--surface:#fcfcfb;--border:rgba(12,18,32,.12);
+    --text:#0b0b0b;--dim:#52514e;--mute:#82817c;
+    --focus:#2a78d6;--rest:#1d9a6c;--bad:#d6453f}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+    --plane:#0f0f0e;--surface:#1a1a19;--border:rgba(255,255,255,.14);
+    --text:#fff;--dim:#c3c2b7;--mute:#8f8e86;
+    --focus:#4f96e8;--rest:#3fbf8c;--bad:#e66767}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--plane);color:var(--text);line-height:1.55;
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    display:flex;justify-content:center;padding:24px 16px}
+  .wrap{width:100%;max-width:700px}
+  h1{font-size:21px;margin:0 0 3px;letter-spacing:-.02em}
+  .lede{color:var(--dim);font-size:13.5px;margin:0 0 18px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px}
+  .dial{display:flex;flex-direction:column;align-items:center;gap:6px}
+  svg.ring{width:230px;height:230px;transform:rotate(-90deg)}
+  .ring .track{fill:none;stroke:var(--border);stroke-width:12}
+  .ring .arc{fill:none;stroke:var(--accentnow,var(--focus));stroke-width:12;stroke-linecap:round;
+    transition:stroke-dashoffset .35s linear,stroke .3s}
+  .clock{font-size:46px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+    margin:-150px 0 96px;position:relative}
+  .phase{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--mute)}
+  .cycle{font-size:12px;color:var(--mute)}
+  .row{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  button{font:inherit;font-size:14px;cursor:pointer;padding:9px 20px;border-radius:9px;
+    border:1px solid var(--border);background:var(--plane);color:var(--text);font-weight:600}
+  button:hover{border-color:var(--focus);color:var(--focus)}
+  button.primary{background:var(--focus);border-color:var(--focus);color:#fff}
+  button.primary:hover{color:#fff;opacity:.92}
+  button.ghost{font-weight:500;font-size:13px;padding:7px 14px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin:0 0 12px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat b{display:block;font-size:24px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .stat span{font-size:11.5px;color:var(--mute)}
+  .hours{display:flex;align-items:flex-end;gap:3px;height:86px;margin-top:6px}
+  .hours div{flex:1;background:var(--focus);border-radius:2px 2px 0 0;min-height:2px;opacity:.85}
+  .hours div.empty{background:var(--border)}
+  .axis{display:flex;justify-content:space-between;font-size:10.5px;color:var(--mute);margin-top:5px}
+  .note{font-size:12.5px;color:var(--mute);line-height:1.5;margin:14px 0 0}
+  .empty-msg{font-size:13px;color:var(--mute);text-align:center;padding:10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Focus Timer</h1>
+  <p class="lede">A Pomodoro timer that reads the wall clock instead of counting ticks, so backgrounding the tab
+    does not quietly stretch a 25-minute block into 35.</p>
+
+  <div class="card">
+    <div class="dial">
+      <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="track" cx="60" cy="60" r="52"/>
+        <circle class="arc" id="arc" cx="60" cy="60" r="52"
+                stroke-dasharray="326.7" stroke-dashoffset="0"/>
+      </svg>
+      <div class="clock" id="clock">25:00</div>
+      <div class="phase" id="phase">Focus</div>
+      <div class="cycle" id="cycle">Block 1 of 4 until a long break</div>
+    </div>
+    <div class="row">
+      <button class="primary" id="toggle">Start</button>
+      <button id="skip">Skip</button>
+      <button class="ghost" id="reset">Reset block</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Your sessions</h2>
+    <div id="statbody"><p class="empty-msg">No completed focus blocks yet.</p></div>
+  </div>
+</div>
+
+<script type="module">
+import { PHASES, LONG_BREAK_EVERY, start, elapsedMs, remainingMs, isRunning, isComplete,
+         pause, resume, nextPhase, formatClock, logEntry, summarize } from './timer.js';
+
+const $ = id => document.getElementById(id);
+const STORE = 'focus-timer';
+const VERSION = 1;
+const MIN = 60000;
+const CIRC = 2 * Math.PI * 52;
+
+let log = load();
+let completedFocus = log.filter(e => e.phase === 'focus' && e.completed).length;
+let phase = 'focus';
+let session = null;          // null means the block has not been started yet
+let raf = null;
+
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STORE) || 'null');
+    return Array.isArray(d?.log) ? d.log.filter(e => e && typeof e.servedMs === 'number') : [];
+  } catch { return []; }     // corrupt storage starts empty rather than throwing
+}
+function persist() {
+  try { localStorage.setItem(STORE, JSON.stringify({ version: VERSION, log })); } catch {}
+}
+
+function beep() {
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.connect(g); g.connect(ac.destination);
+    o.frequency.value = phase === 'focus' ? 880 : 660;
+    g.gain.setValueAtTime(0.0001, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.25, ac.currentTime + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.5);
+    o.start(); o.stop(ac.currentTime + 0.5);
+  } catch {}                 // audio is a nicety, never a requirement
+}
+
+function draw() {
+  const now = Date.now();
+  const total = session ? session.durationMs : PHASES[phase].ms;
+  const left = session ? remainingMs(session, now) : total;
+
+  $('clock').textContent = formatClock(left);
+  $('phase').textContent = PHASES[phase].label;
+  $('arc').style.setProperty('--accentnow', phase === 'focus' ? 'var(--focus)' : 'var(--rest)');
+  $('arc').setAttribute('stroke-dashoffset', String(CIRC * (1 - left / total)));
+  const n = (completedFocus % LONG_BREAK_EVERY) + 1;
+  $('cycle').textContent = phase === 'focus'
+    ? `Block ${n} of ${LONG_BREAK_EVERY} until a long break`
+    : `Up next: block ${n} of ${LONG_BREAK_EVERY}`;
+  $('toggle').textContent = !session ? 'Start' : isRunning(session) ? 'Pause' : 'Resume';
+  document.title = session && isRunning(session)
+    ? `${formatClock(left)} · ${PHASES[phase].label}` : 'Focus Timer';
+
+  if (session && isComplete(session, now)) finish(true);
+  expose();
+}
+
+/* One rAF loop that re-reads the clock. Even if the browser stops calling it
+   while the tab is hidden, the next frame reads the true elapsed time. */
+function loop() {
+  draw();
+  raf = requestAnimationFrame(loop);
+}
+function ensureLoop() { if (raf === null) loop(); }
+
+function finish(completed) {
+  const now = Date.now();
+  if (session) {
+    log.push(logEntry(session, now, completed));
+    if (session.phase === 'focus' && completed) completedFocus++;
+    persist();
+    if (completed) beep();
+  }
+  phase = nextPhase(phase, completedFocus);
+  session = null;
+  renderStats();
+  draw();
+}
+
+$('toggle').addEventListener('click', () => {
+  const now = Date.now();
+  if (!session) session = start(phase, now);
+  else session = isRunning(session) ? pause(session, now) : resume(session, now);
+  ensureLoop();
+  draw();
+});
+$('skip').addEventListener('click', () => finish(false));
+$('reset').addEventListener('click', () => { session = null; draw(); });
+
+function renderStats() {
+  const s = summarize(log);
+  if (!s.completedCount) {
+    $('statbody').innerHTML = '<p class="empty-msg">No completed focus blocks yet.</p>';
+    return;
+  }
+  const hrs = m => m >= MIN * 60 ? `${(m / (MIN * 60)).toFixed(1)}h` : `${Math.round(m / MIN)}m`;
+  const peak = Math.max(...s.byHour.map(h => h.ms), 1);
+  const hourLabel = h => `${((h + 11) % 12) + 1}${h < 12 ? 'am' : 'pm'}`;
+
+  $('statbody').innerHTML = `
+    <div class="stats">
+      <div class="stat"><b>${hrs(s.focusMs)}</b><span>focused</span></div>
+      <div class="stat"><b>${s.completedCount}</b><span>blocks finished</span></div>
+      <div class="stat"><b>${Math.round(s.completionRate * 100)}%</b><span>of blocks started</span></div>
+      <div class="stat"><b>${s.currentStreak}</b><span>day streak</span></div>
+    </div>
+    <h2 style="margin:20px 0 0">Focus by hour</h2>
+    <div class="hours">${s.byHour.map(h =>
+      `<div class="${h.ms ? '' : 'empty'}" style="height:${Math.max(2, (h.ms / peak) * 100)}%"
+            title="${hourLabel(h.hour)}: ${Math.round(h.ms / MIN)} min"></div>`).join('')}</div>
+    <div class="axis"><span>12am</span><span>6am</span><span>noon</span><span>6pm</span><span>11pm</span></div>
+    <p class="note" id="insight"></p>`;
+
+  $('insight').textContent =
+    `Your most productive hour is ${hourLabel(s.bestHour)} — ` +
+    `${Math.round(s.byHour[s.bestHour].ms / MIN)} minutes across ${s.byHour[s.bestHour].sessions} ` +
+    `block${s.byHour[s.bestHour].sessions === 1 ? '' : 's'}. ` +
+    `Longest streak ${s.longestStreak} day${s.longestStreak === 1 ? '' : 's'}, ` +
+    `over ${s.activeDays} active day${s.activeDays === 1 ? '' : 's'}. ` +
+    (s.abandonedMs ? `${hrs(s.abandonedMs)} went into blocks you did not finish.` : '');
+}
+
+function expose() {
+  window.__timer = {
+    phase, running: session ? isRunning(session) : false,
+    started: !!session,
+    remainingMs: session ? remainingMs(session, Date.now()) : PHASES[phase].ms,
+    clock: $('clock').textContent,
+    completedFocus, logLength: log.length,
+    summary: summarize(log),
+  };
+}
+// tests need to drive the log directly; this is the only write path they use
+window.__seed = entries => { log = entries; completedFocus =
+  log.filter(e => e.phase === 'focus' && e.completed).length; persist(); renderStats(); draw(); };
+
+renderStats();
+draw();
+ensureLoop();
+</script>
+</body>
+</html>
