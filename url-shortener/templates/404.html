@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Not found{% endblock %}
+{% block body %}
+<h1><a href="{{ url_for('index') }}">URL Shortener</a></h1>
+<div class="card"><p class="empty">That short link does not exist.</p></div>
+{% endblock %}

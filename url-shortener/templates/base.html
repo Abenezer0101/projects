@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Shortener{% endblock %}</title>
+<style>
+ :root{color-scheme:light;--plane:#f6f7f9;--surface:#fcfcfb;--border:rgba(12,18,32,.12);
+   --text:#0b0b0b;--dim:#52514e;--mute:#82817c;--accent:#2a78d6;--bad:#d6453f;--good:#1d9a6c}
+ @media(prefers-color-scheme:dark){:root{color-scheme:dark;--plane:#0f0f0e;--surface:#1a1a19;
+   --border:rgba(255,255,255,.14);--text:#fff;--dim:#c3c2b7;--mute:#8f8e86;
+   --accent:#4f96e8;--bad:#e66767;--good:#3fbf8c}}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--plane);color:var(--text);line-height:1.55;
+   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center;padding:26px 16px}
+ .wrap{width:100%;max-width:720px}
+ h1{font-size:21px;margin:0 0 3px;letter-spacing:-.02em}
+ h1 a{color:inherit;text-decoration:none}
+ .lede{color:var(--dim);font-size:13.5px;margin:0 0 18px}
+ .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+ label{display:block;font-size:12px;color:var(--mute);margin:0 0 5px;font-weight:600}
+ input{width:100%;font:inherit;font-size:14px;padding:10px 12px;border-radius:9px;
+   border:1px solid var(--border);background:var(--plane);color:var(--text)}
+ input:focus{outline:none;border-color:var(--accent)}
+ .grid{display:grid;grid-template-columns:1fr 200px auto;gap:10px;align-items:end}
+ @media(max-width:600px){.grid{grid-template-columns:1fr}}
+ button{font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:10px 20px;border-radius:9px;
+   border:1px solid var(--accent);background:var(--accent);color:#fff;white-space:nowrap}
+ .err{color:var(--bad);font-size:13.5px;margin:12px 0 0}
+ .made{margin:14px 0 0;padding:12px 14px;border:1px solid var(--good);border-radius:10px;
+   background:color-mix(in srgb,var(--good) 8%,transparent);font-size:14px;word-break:break-all}
+ .made a{color:var(--good);font-weight:700}
+ table{width:100%;border-collapse:collapse;font-size:13.5px}
+ th,td{border-bottom:1px solid var(--border);padding:8px 6px;text-align:left;vertical-align:top}
+ th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+ td.num{text-align:right;font-variant-numeric:tabular-nums}
+ .url{color:var(--dim);word-break:break-all;max-width:330px;display:inline-block}
+ code{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--plane);
+   padding:2px 6px;border-radius:5px;font-size:12.5px}
+ a{color:var(--accent)}
+ h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin:0 0 12px}
+ .tag{display:inline-block;font-size:10.5px;padding:1px 6px;border-radius:999px;
+   border:1px solid var(--border);color:var(--mute);margin-left:5px}
+ .bars{display:flex;align-items:flex-end;gap:4px;height:70px;margin-top:8px}
+ .bars div{flex:1;background:var(--accent);border-radius:2px 2px 0 0;min-height:2px}
+ .big{font-size:27px;font-weight:700;letter-spacing:-.02em}
+ .stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:6px}
+ .stats3 span{display:block;font-size:11.5px;color:var(--mute)}
+ .empty{color:var(--mute);font-size:13px;text-align:center;padding:12px 0}
+</style></head>
+<body><div class="wrap">{% block body %}{% endblock %}</div></body></html>
