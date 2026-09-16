@@ -26,6 +26,7 @@ Data, analytics, and application builds.
 | [Markdown Notes](./markdown-notes/) | JS | Markdown renderer written from scratch, XSS-safe by construction; 63 + 19 tests. |
 | [Calibration Quiz](./quiz-app/) | JS | Quiz generated from real data; scores confidence with a Brier score. 36 + 18 tests. |
 | [Focus Timer](./focus-timer/) | JS | Pomodoro that reads the wall clock, not ticks; a hidden tab costs a naive timer 593s. 50 + 26 tests. |
+| [URL Shortener](./url-shortener/) | Flask + SQLite | Real backend: scheme allowlist, UNIQUE-constraint collision retry, click analytics. 44 tests. |
 | [Sales Ops Dashboard](./sales-ops-dashboard/) | JS | Sales operations dashboard. |
 | [Impossible Gift Machine](./gift-app/) | JS | Gift-picking app. |
 

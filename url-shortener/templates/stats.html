@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}/{{ s.code }} — stats{% endblock %}
+{% block body %}
+<h1><a href="{{ url_for('index') }}">URL Shortener</a></h1>
+<p class="lede"><code>/{{ s.code }}</code> → <span class="url">{{ s.url }}</span></p>
+<div class="card">
+  <div class="stats3">
+    <div><div class="big">{{ s.clicks }}</div><span>clicks</span></div>
+    <div><div class="big">{{ s.by_day|length }}</div><span>active days</span></div>
+    <div><div class="big">{{ 'yes' if s.custom else 'no' }}</div><span>custom alias</span></div>
+  </div>
+  {% if s.by_day %}
+    <h2 style="margin-top:20px">Clicks by day</h2>
+    {% set peak = s.by_day|map(attribute='n')|max %}
+    <div class="bars">{% for d in s.by_day %}
+      <div style="height:{{ (d.n / peak * 100)|round|int }}%" title="{{ d.day }}: {{ d.n }}"></div>
+    {% endfor %}</div>
+    <table style="margin-top:16px">
+      <thead><tr><th>Referrer</th><th class="num">Clicks</th></tr></thead>
+      <tbody>{% for r in s.referrers %}
+        <tr><td><span class="url">{{ r.src }}</span></td><td class="num">{{ r.n }}</td></tr>
+      {% endfor %}</tbody>
+    </table>
+  {% else %}<p class="empty">No clicks yet.</p>{% endif %}
+</div>
+<p class="lede"><a href="{{ url_for('index') }}">← all links</a> ·
+  <a href="{{ url_for('api_stats', code=s.code) }}">JSON</a></p>
+{% endblock %}
