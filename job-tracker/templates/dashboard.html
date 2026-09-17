@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block body %}
+<p class="lede">Every number here is computed from the event log at request time. Nothing is stored
+  pre-aggregated, so no figure can drift away from the rows it came from.</p>
+
+<div class="card">
+  <div class="stats">
+    <div class="stat"><b>{{ totals.applications }}</b><span>applications</span></div>
+    <div class="stat"><b>{{ response.n }}</b><span>got a reply</span></div>
+    <div class="stat"><b>{% if response.median is none %}—{% else %}{{ response.median|round|int }}d{% endif %}</b>
+      <span>median to first reply</span></div>
+    <div class="stat"><b>{% if totals.ghost.rate is none %}—{% else %}{{ (totals.ghost.rate*100)|round|int }}%{% endif %}</b>
+      <span>never heard back</span></div>
+  </div>
+  <p class="note">The no-reply rate excludes {{ totals.ghost.excluded_too_recent }} applications sent in the
+    last 30 days, which have not had time to answer. Counting them would make a recent burst of applying
+    look like a collapse in response rate.
+    {% if response.mean %}Mean reply {{ response.mean|round(1) }}d, 90th percentile {{ response.p90|round|int }}d.{% endif %}</p>
+</div>
+
+<div class="card">
+  <h2>Funnel — counted from the event log</h2>
+  <div class="funnel">
+    {% set top = funnel[0].n or 1 %}
+    {% for r in funnel %}
+    <div class="frow">
+      <span>{{ r.stage }}</span>
+      <div class="fbar" style="width:{{ (r.n / top * 100)|round(1) }}%"></div>
+      <span class="num">{{ r.n }}{% if r.from_prev is not none %} · {{ (r.from_prev*100)|round|int }}%{% endif %}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>The same data, counted the common wrong way</h2>
+  <div class="funnel">
+    {% set ntop = naive[0].n or 1 %}
+    {% for r in naive %}
+    <div class="frow">
+      <span>{{ r.stage }}</span>
+      <div class="fbar n" style="width:{{ (r.n / ntop * 100)|round(1) }}%"></div>
+      <span class="num">{{ r.n }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="note">This is <code>GROUP BY current_stage</code> — counting where applications are now
+    instead of where they have been. It reports
+    <b>{{ naive[2].n }}</b> interview{{ '' if naive[2].n == 1 else 's' }} against the {{ funnel[2].n }} that
+    really happened, and
+    {% if naive[4].n > naive[2].n %}<b>more offers ({{ naive[4].n }}) than interviews ({{ naive[2].n }})</b>,
+    which is impossible{% else %}loses every application that has moved on{% endif %}.
+    Both bars are drawn from the same database.</p>
+</div>
+
+<div class="card">
+  <h2>By source</h2>
+  <table>
+    <thead><tr><th>Source</th><th class="num">Applications</th><th class="num">Replied</th>
+      <th class="num">Reply rate</th><th class="num">Interviews</th><th class="num">Offers</th></tr></thead>
+    <tbody>{% for s in sources %}
+      <tr><td>{{ s.source }}</td><td class="num">{{ s.applications }}</td>
+        <td class="num">{{ s.replies }}</td>
+        <td class="num">{{ (s.replies / s.applications * 100)|round|int }}%</td>
+        <td class="num">{{ s.interviews }}</td><td class="num">{{ s.offers }}</td></tr>
+    {% endfor %}</tbody>
+  </table>
+  <p class="note">Reply rate leads this table rather than interview rate, because interview counts
+    here are small enough that a single extra interview swings the percentage by several points.
+    Volume and conversion are different questions: the channel with the most applications is not
+    the one with the best reply rate.</p>
+</div>
+{% endblock %}

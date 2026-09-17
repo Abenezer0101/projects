@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block body %}
+<p class="lede">Every stage an application reaches is appended to an event log, so the funnel can
+  count what actually happened rather than where things happen to sit right now.</p>
+
+<div class="card">
+  <div class="stats">
+    <div class="stat"><b>{{ totals.applications }}</b><span>applications</span></div>
+    <div class="stat"><b>{{ totals.open }}</b><span>still open</span></div>
+    <div class="stat"><b>{{ totals.offers }}</b><span>offers</span></div>
+    <div class="stat"><b>{% if totals.ghost.rate is none %}—{% else %}{{ (totals.ghost.rate*100)|round|int }}%{% endif %}</b>
+      <span>no reply after 30d</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Log an application</h2>
+  <form method="post" action="{{ url_for('create') }}">
+    <div class="grid g5">
+      <div><label for="company">Company</label><input id="company" name="company" list="known" required></div>
+      <div><label for="role">Role</label><input id="role" name="role" required></div>
+      <div><label for="source">Source</label><select id="source" name="source">
+        {% for s in sources %}<option>{{ s }}</option>{% endfor %}</select></div>
+      <div><label for="applied_on">Applied on</label>
+        <input id="applied_on" name="applied_on" type="date" value="{{ today }}"></div>
+      <button type="submit">Add</button>
+    </div>
+    <datalist id="known">{% for c in companies %}<option value="{{ c.name }}">{% endfor %}</datalist>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Applications</h2>
+  <form method="get" action="{{ url_for('index') }}">
+    <div class="grid g4">
+      <div><label for="q">Search</label><input id="q" name="q" value="{{ filters.q }}" placeholder="company or role"></div>
+      <div><label for="stage">Stage</label><select id="stage" name="stage">
+        <option value="">Any</option>
+        {% for s in stages %}<option value="{{ s }}" {{ 'selected' if filters.stage==s }}>{{ s }}</option>{% endfor %}
+      </select></div>
+      <div><label for="src">Source</label><select id="src" name="source">
+        <option value="">Any</option>
+        {% for s in sources %}<option value="{{ s }}" {{ 'selected' if filters.source==s }}>{{ s }}</option>{% endfor %}
+      </select></div>
+      <button class="ghost" type="submit">Filter</button>
+    </div>
+  </form>
+
+  {% if apps %}
+  <table style="margin-top:16px">
+    <thead><tr><th>Company</th><th>Role</th><th>Source</th><th>Applied</th><th>Stage</th><th class="num">Events</th></tr></thead>
+    <tbody>{% for a in apps %}
+      <tr>
+        <td><a href="{{ url_for('detail', app_id=a.id) }}">{{ a.company }}</a></td>
+        <td>{{ a.role }}</td><td>{{ a.source }}</td>
+        <td class="mono">{{ a.applied_on }}</td>
+        <td><span class="pill {{ a.current_stage }}">{{ a.current_stage }}</span></td>
+        <td class="num">{{ a.events }}</td>
+      </tr>
+    {% endfor %}</tbody>
+  </table>
+  {% else %}<p class="empty">Nothing matches that filter.</p>{% endif %}
+</div>
+{% endblock %}
