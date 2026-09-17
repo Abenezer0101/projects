@@ -29,6 +29,6 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 - [x] **Day 18** — Data-driven quiz app *(done)*
 - [x] **Day 19** — Pomodoro / focus timer with session stats *(done)*
 - [x] **Day 20** — URL shortener (Flask + SQLite) — real backend *(done)*
-- [ ] **Day 21** — Capstone: small full-stack CRUD (Flask + SQLite + dashboard) tying DB + analytics + UI together, plus a portfolio landing page linking every project
+- [x] **Day 21** — Capstone: small full-stack CRUD (Flask + SQLite + dashboard) tying DB + analytics + UI together, plus a portfolio landing page linking every project *(done)*
 
 _All figures/data in these projects are illustrative for a portfolio unless a source is cited._

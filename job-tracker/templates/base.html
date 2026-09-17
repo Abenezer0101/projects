@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Application Tracker{% endblock %}</title>
+<style>
+ :root{color-scheme:light;--plane:#f6f7f9;--surface:#fcfcfb;--border:rgba(12,18,32,.12);
+   --text:#0b0b0b;--dim:#52514e;--mute:#82817c;--accent:#2a78d6;--bad:#d6453f;--good:#1d9a6c;--warn:#c98a1b}
+ @media(prefers-color-scheme:dark){:root{color-scheme:dark;--plane:#0f0f0e;--surface:#1a1a19;
+   --border:rgba(255,255,255,.14);--text:#fff;--dim:#c3c2b7;--mute:#8f8e86;
+   --accent:#4f96e8;--bad:#e66767;--good:#3fbf8c;--warn:#e0ab45}}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--plane);color:var(--text);line-height:1.55;
+   font-family:system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;justify-content:center;padding:24px 16px}
+ .wrap{width:100%;max-width:1000px}
+ header{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+ h1{font-size:20px;margin:0;letter-spacing:-.02em}
+ h1 a,nav a{color:inherit;text-decoration:none}
+ nav{display:flex;gap:14px;font-size:13.5px}
+ nav a{color:var(--dim)} nav a:hover,nav a.on{color:var(--accent);font-weight:600}
+ .lede{color:var(--dim);font-size:13.5px;margin:0 0 18px}
+ .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+ h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin:0 0 12px;font-weight:600}
+ label{display:block;font-size:11.5px;color:var(--mute);margin:0 0 4px;font-weight:600}
+ input,select,textarea{width:100%;font:inherit;font-size:13.5px;padding:8px 10px;border-radius:8px;
+   border:1px solid var(--border);background:var(--plane);color:var(--text)}
+ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+ button{font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;padding:9px 16px;border-radius:8px;
+   border:1px solid var(--accent);background:var(--accent);color:#fff;white-space:nowrap}
+ button.ghost{background:var(--surface);color:var(--text);border-color:var(--border);font-weight:500}
+ button.danger{background:var(--surface);color:var(--bad);border-color:var(--bad);font-weight:500}
+ .grid{display:grid;gap:10px;align-items:end}
+ .g5{grid-template-columns:2fr 2fr 1.3fr 1.2fr auto}
+ .g4{grid-template-columns:1.5fr 1fr 1fr auto}
+ @media(max-width:760px){.g5,.g4{grid-template-columns:1fr}}
+ table{width:100%;border-collapse:collapse;font-size:13.5px}
+ th,td{border-bottom:1px solid var(--border);padding:8px 6px;text-align:left}
+ th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+ a{color:var(--accent)}
+ .pill{display:inline-block;font-size:11px;padding:2px 9px;border-radius:999px;
+   border:1px solid var(--border);color:var(--dim);white-space:nowrap}
+ .pill.offer,.pill.accepted{color:var(--good);border-color:var(--good)}
+ .pill.rejected,.pill.ghosted{color:var(--bad);border-color:var(--bad)}
+ .pill.interview,.pill.onsite{color:var(--warn);border-color:var(--warn)}
+ .pill.screen{color:var(--accent);border-color:var(--accent)}
+ .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+ @media(max-width:620px){.stats{grid-template-columns:repeat(2,1fr)}}
+ .stat b{display:block;font-size:25px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+ .stat span{font-size:11.5px;color:var(--mute)}
+ .flash{border:1px solid var(--good);background:color-mix(in srgb,var(--good) 8%,transparent);
+   border-radius:9px;padding:9px 13px;font-size:13.5px;margin-bottom:14px}
+ .note{font-size:12.5px;color:var(--mute);line-height:1.55;margin:12px 0 0}
+ .empty{color:var(--mute);font-size:13px;text-align:center;padding:16px 0}
+ .funnel{display:flex;flex-direction:column;gap:7px}
+ .frow{display:grid;grid-template-columns:82px 1fr 96px;align-items:center;gap:10px;font-size:13px}
+ .fbar{height:26px;border-radius:5px;background:var(--accent);min-width:2px}
+ .fbar.n{background:var(--bad);opacity:.75}
+ .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+</style></head>
+<body><div class="wrap">
+<header>
+  <h1><a href="{{ url_for('index') }}">Application Tracker</a></h1>
+  <nav>
+    <a href="{{ url_for('index') }}" class="{{ 'on' if request.endpoint=='index' }}">Applications</a>
+    <a href="{{ url_for('dashboard') }}" class="{{ 'on' if request.endpoint=='dashboard' }}">Dashboard</a>
+    <a href="{{ url_for('api_analytics') }}">API</a>
+  </nav>
+</header>
+{% with msgs = get_flashed_messages() %}{% for m in msgs %}<div class="flash">{{ m }}</div>{% endfor %}{% endwith %}
+{% block body %}{% endblock %}
+</div></body></html>

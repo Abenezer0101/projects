@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ app.role }} — {{ app.company }}{% endblock %}
+{% block body %}
+<p class="lede">{{ app.role }} at <b>{{ app.company }}</b> · {{ app.industry }} ·
+  applied {{ app.applied_on }} via {{ app.source }}</p>
+
+<div class="card">
+  <h2>History</h2>
+  <table>
+    <thead><tr><th>Stage</th><th>Date</th><th class="num">Days from applying</th></tr></thead>
+    <tbody>{% for e in events %}
+      <tr><td><span class="pill {{ e.stage }}">{{ e.stage }}</span></td>
+          <td class="mono">{{ e.occurred_on }}</td>
+          <td class="num">{{ e.days_in }}</td></tr>
+    {% endfor %}</tbody>
+  </table>
+  <form method="post" action="{{ url_for('advance', app_id=app.id) }}" style="margin-top:16px">
+    <div class="grid g4">
+      <div><label for="stage">Record a new stage</label><select id="stage" name="stage">
+        {% for s in stages %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+        {% for s in terminal %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+      </select></div>
+      <div><label for="occurred_on">On</label>
+        <input id="occurred_on" name="occurred_on" type="date" value="{{ today }}"></div>
+      <div></div><button type="submit">Record</button>
+    </div>
+  </form>
+  <p class="note">Events are append-only. Recording a stage never rewrites what came before,
+    which is what lets the funnel count an application in every stage it passed through.</p>
+</div>
+
+<div class="card">
+  <h2>Edit</h2>
+  <form method="post" action="{{ url_for('edit', app_id=app.id) }}">
+    <div class="grid g4">
+      <div><label for="role">Role</label><input id="role" name="role" value="{{ app.role }}"></div>
+      <div><label for="source">Source</label><select id="source" name="source">
+        {% for s in sources %}<option {{ 'selected' if app.source==s }}>{{ s }}</option>{% endfor %}</select></div>
+      <div><label for="notes">Notes</label><input id="notes" name="notes" value="{{ app.notes or '' }}"></div>
+      <button type="submit">Save</button>
+    </div>
+  </form>
+</div>
+
+<form method="post" action="{{ url_for('delete', app_id=app.id) }}"
+      onsubmit="return confirm('Delete this application and its history?')">
+  <button class="danger" type="submit">Delete application</button>
+</form>
+<p class="note"><a href="{{ url_for('index') }}">← all applications</a></p>
+{% endblock %}
