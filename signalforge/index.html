@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#111512" />
+    <meta
+      name="description"
+      content="SignalForge turns scattered research into evidence-backed decisions. Local-first research, scoring, knowledge maps and change tracking."
+    />
+    <title>SignalForge — research into conviction</title>
+    <link rel="icon" href="./mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to workspace</a>
+    <aside class="sidebar">
+      <a class="brand" href="./"
+        ><img src="./mark.svg" alt="" width="32" height="32" />SignalForge<span
+          >LAB</span
+        ></a
+      >
+      <div class="workspace-label">YOUR WORKSPACE</div>
+      <div class="workspace-name">
+        <span class="avatar">SF</span><span id="workspace-title"></span>
+      </div>
+      <nav aria-label="Workspace">
+        <button data-view="overview" class="active">
+          <span>◈</span> Overview</button
+        ><button data-view="evidence">
+          <span>▤</span> Evidence library <b id="evidence-count"></b></button
+        ><button data-view="map"><span>⌘</span> Knowledge map</button
+        ><button data-view="scenarios"><span>≋</span> Decision lab</button
+        ><button data-view="changes"><span>↗</span> Change log</button
+        ><button data-view="research"><span>✧</span> Live research</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="local-dot">Saved on this device</div>
+        <p>Your evidence. Your judgment.</p>
+        <button id="backup">Export backup ↓</button
+        ><button id="import">Import workspace ↑</button
+        ><input
+          id="import-file"
+          type="file"
+          accept=".json,application/json"
+          hidden
+        /><button id="new-workspace">+ Start empty workspace</button>
+      </div>
+    </aside>
+    <div class="shell">
+      <header>
+        <div class="breadcrumb">
+          Workspace <span>/</span> <strong id="page-name">Overview</strong>
+        </div>
+        <div class="header-actions">
+          <span class="pill" id="mode-badge">Demo workspace</span
+          ><button id="export-brief">Export brief ↗</button>
+        </div>
+      </header>
+      <main id="main" tabindex="-1"></main>
+      <footer>
+        BUILT FOR CURIOSITY. DESIGNED FOR CONVICTION.<span
+          >SignalForge / 01</span
+        >
+      </footer>
+    </div>
+    <dialog id="editor">
+      <form id="editor-form">
+        <div class="dialog-head">
+          <h2 id="dialog-title"></h2>
+          <button type="button" id="close-dialog" aria-label="Close dialog">
+            ×
+          </button>
+        </div>
+        <div id="dialog-fields"></div>
+        <p id="form-error" role="alert"></p>
+        <button class="primary" type="submit">Save to workspace</button>
+      </form>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./app.mjs"></script>
+  </body>
+</html>
