@@ -1,0 +1,22 @@
+name: SignalForge tests
+on:
+  pull_request:
+    paths: ['signalforge/**', '.github/workflows/signalforge-tests.yml']
+  push:
+    branches: [main]
+    paths: ['signalforge/**', '.github/workflows/signalforge-tests.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: node --test signalforge/tests/core.test.mjs
+      - run: python -m unittest discover -s signalforge/tests -p 'test_*.py'

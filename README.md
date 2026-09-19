@@ -4,6 +4,7 @@ Data, analytics, and application builds.
 
 | Project | Stack | What it is |
 |---|---|---|
+| [SignalForge](./signalforge/) | JavaScript, Python, OpenAI (optional) | Evidence-backed research workspace: live rankings, knowledge map, scenarios, snapshots, source-linked briefs, and an optional three-stage AI research pipeline. |
 | [US Population & Income Correlations](./us-population-income-dashboard/) | Chart.js, JS | Interactive dashboard on state population vs. median household income — a rebuild of a CIS 2010 Tableau data-visualization project. |
 | [Instagram Database System](./instagram-database-system/) | MySQL, UML | 3NF relational schema, seed data, and analytical SQL (self-joins, correlated subqueries, window functions) for a photo-sharing platform. |
 | [Library Management Database](./library-management-db/) | MySQL | Members/books/copies/loans schema with overdue detection and availability queries, plus a SQL quick-reference. |
