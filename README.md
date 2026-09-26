@@ -28,6 +28,7 @@ Data, analytics, and application builds.
 | [Focus Timer](./focus-timer/) | JS | Pomodoro that reads the wall clock, not ticks; a hidden tab costs a naive timer 593s. 50 + 26 tests. |
 | [URL Shortener](./url-shortener/) | Flask + SQLite | Real backend: scheme allowlist, UNIQUE-constraint collision retry, click analytics. 44 tests. |
 | [Application Tracker](./job-tracker/) | Flask + SQLite | Capstone: CRUD + funnel analytics from an event log. The naive funnel reports 1 interview where 9 happened. 36 tests. |
+| [assay](./assay/) | Python | A data quality gate that audits its own rules by corrupting data on purpose. 58 tests, zero dependencies. |
 | [Sales Ops Dashboard](./sales-ops-dashboard/) | JS | Sales operations dashboard. |
 | [Impossible Gift Machine](./gift-app/) | JS | Gift-picking app. |
 

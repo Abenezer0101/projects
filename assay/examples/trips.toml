@@ -1,0 +1,64 @@
+# A rule suite for bikeshare trip data.
+#
+# Written the way most suites are written in practice: covering the problems
+# someone already ran into. `assay audit` exists because that is exactly the
+# process that leaves blind spots.
+
+name = "bikeshare trips"
+source = "examples/trips.csv"
+
+[[rule]]
+id = "ride_id_present"
+kind = "not_null"
+column = "ride_id"
+
+[[rule]]
+id = "ride_id_unique"
+kind = "unique"
+columns = ["ride_id"]
+
+[[rule]]
+id = "ride_id_format"
+kind = "matches"
+column = "ride_id"
+pattern = "R[0-9]{6}"
+
+[[rule]]
+id = "started_at_present"
+kind = "not_null"
+column = "started_at"
+
+[[rule]]
+id = "started_at_is_datetime"
+kind = "is_type"
+column = "started_at"
+type = "datetime"
+
+[[rule]]
+id = "ended_at_is_datetime"
+kind = "is_type"
+column = "ended_at"
+type = "datetime"
+
+[[rule]]
+id = "ends_after_start"
+kind = "compare"
+columns = ["started_at", "ended_at"]
+op = "<"
+
+[[rule]]
+id = "user_type_known"
+kind = "in_set"
+column = "user_type"
+allowed = ["member", "casual"]
+severity = "warn"
+
+[[rule]]
+id = "stations_present"
+kind = "not_null"
+column = "start_station"
+
+[[rule]]
+id = "expected_columns"
+kind = "columns_exist"
+columns = ["ride_id", "started_at", "ended_at", "start_station", "end_station", "user_type"]

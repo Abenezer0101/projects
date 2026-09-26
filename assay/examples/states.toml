@@ -1,0 +1,43 @@
+name = "US state population and income"
+source = "examples/states.csv"
+
+[[rule]]
+id = "state_present"
+kind = "not_null"
+column = "State"
+
+[[rule]]
+id = "state_unique"
+kind = "unique"
+columns = ["State"]
+
+[[rule]]
+id = "region_known"
+kind = "in_set"
+column = "Region"
+allowed = ["Northeast", "Midwest", "South", "West"]
+
+[[rule]]
+id = "population_is_number"
+kind = "is_type"
+column = "Population2020"
+type = "int"
+
+[[rule]]
+id = "population_plausible"
+kind = "range"
+column = "Population2020"
+min = 100000
+max = 60000000
+
+[[rule]]
+id = "income_is_number"
+kind = "is_type"
+column = "MedianHouseholdIncome"
+type = "int"
+
+[[rule]]
+id = "fifty_states_plus_dc"
+kind = "row_count"
+min = 51
+max = 51
