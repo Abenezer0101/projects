@@ -28,6 +28,7 @@ Data, analytics, and application builds.
 | [Focus Timer](./focus-timer/) | JS | Pomodoro that reads the wall clock, not ticks; a hidden tab costs a naive timer 593s. 50 + 26 tests. |
 | [URL Shortener](./url-shortener/) | Flask + SQLite | Real backend: scheme allowlist, UNIQUE-constraint collision retry, click analytics. 44 tests. |
 | [Application Tracker](./job-tracker/) | Flask + SQLite | Capstone: CRUD + funnel analytics from an event log. The naive funnel reports 1 interview where 9 happened. 36 tests. |
+| [query-planner-lab](./query-planner-lab/) | Python + SQLite | Times five queries with and without an index, and finds the one an index makes 39% slower. 12 MB dataset, deterministic. |
 | [assay](./assay/) | Python | A data quality gate that audits its own rules by corrupting data on purpose. 58 tests, zero dependencies. |
 | [omnitwin](./omnitwin/) | Python | A digital twin of a small business: price, ad spend and inventory simulated before you commit. 37 tests, zero dependencies. |
 | [thicket](./thicket/) | Python | Gradient boosted trees written from scratch and diffed against scikit-learn, plus a demo of how preprocessing before the split fakes accuracy. 26 tests. |
