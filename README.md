@@ -28,6 +28,7 @@ Data, analytics, and application builds.
 | [Focus Timer](./focus-timer/) | JS | Pomodoro that reads the wall clock, not ticks; a hidden tab costs a naive timer 593s. 50 + 26 tests. |
 | [URL Shortener](./url-shortener/) | Flask + SQLite | Real backend: scheme allowlist, UNIQUE-constraint collision retry, click analytics. 44 tests. |
 | [Application Tracker](./job-tracker/) | Flask + SQLite | Capstone: CRUD + funnel analytics from an event log. The naive funnel reports 1 interview where 9 happened. 36 tests. |
+| [docstring-search](./docstring-search/) | Python | BM25 over 2,077 stdlib docstrings, scored against substring search. With the textbook parameters it loses. |
 | [rate-limiter](./rate-limiter/) | Python | Four rate limiters audited against their own promise. Three of the four exceed it; two by 2x. 22 tests. |
 | [sqlite-concurrency-lab](./sqlite-concurrency-lab/) | Python + SQLite | Eight writer processes on one file: WAL against rollback journal, with the lock errors counted. |
 | [query-planner-lab](./query-planner-lab/) | Python + SQLite | Times five queries with and without an index, and finds the one an index makes 39% slower. 12 MB dataset, deterministic. |
