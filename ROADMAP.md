@@ -34,7 +34,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 ## Week 4 — Systems, Correctness & Measurement
 - [x] **Day 22** — Query planner lab: run EXPLAIN QUERY PLAN on the Day 3 e-commerce DB, add indexes, and time the same queries before and after. Find and document at least one query the index makes *slower*, and say why. *(done)*
 - [x] **Day 23** — SQLite under concurrent writers: a script that provokes real lock contention, then compares rollback-journal against WAL mode. Report measured throughput and the error each mode actually raises. *(done)*
-- [ ] **Day 24** — Rate limiter, three ways: fixed window, sliding window, token bucket. Demonstrate the boundary burst a fixed window permits (up to 2x the nominal limit across a window edge) with a test that fails on the naive implementation.
+- [x] **Day 24** — Rate limiter, three ways: fixed window, sliding window, token bucket. Demonstrate the boundary burst a fixed window permits (up to 2x the nominal limit across a window edge) with a test that fails on the naive implementation. *(done)*
 - [ ] **Day 25** — Search from scratch: an inverted index with BM25 ranking over a real text corpus, scored against a `LIKE '%term%'` baseline on hand-labelled relevance. Report precision@10 for both.
 - [ ] **Day 26** — A regex engine: Thompson NFA simulation, differentially tested against Python's `re` on generated patterns. Include the input where `re` backtracks catastrophically and the NFA does not, with both timings.
 - [ ] **Day 27** — The CSV parser nobody writes: quoted commas, embedded newlines, BOMs, CRLF, ragged rows. Adjudicated against the `csv` module on adversarial generated input, with a table of exactly which cases `line.split(',')` gets wrong.
