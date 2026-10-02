@@ -38,7 +38,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 - [x] **Day 25** — Search from scratch: an inverted index with BM25 ranking over a real text corpus, scored against a `LIKE '%term%'` baseline on hand-labelled relevance. Report precision@10 for both. *(done)*
 - [x] **Day 26** — A regex engine: Thompson NFA simulation, differentially tested against Python's `re` on generated patterns. Include the input where `re` backtracks catastrophically and the NFA does not, with both timings. *(done)*
 - [x] **Day 27** — The CSV parser nobody writes: quoted commas, embedded newlines, BOMs, CRLF, ragged rows. Adjudicated against the `csv` module on adversarial generated input, with a table of exactly which cases `line.split(',')` gets wrong. *(done)*
-- [ ] **Day 28** — A/B test calculator that refuses to lie: simulate peeking at results daily and measure how far the false-positive rate climbs above the nominal 5%. Implement a sequential test that holds the rate.
+- [x] **Day 28** — A/B test calculator that refuses to lie: simulate peeking at results daily and measure how far the false-positive rate climbs above the nominal 5%. Implement a sequential test that holds the rate. *(done)*
 
 ## Week 5 — Inference & Judgement
 - [ ] **Day 29** — Forecasting with honest baselines: naive and seasonal-naive against a fitted model, walk-forward on a real series. Report the case where the baseline wins, if it does.
