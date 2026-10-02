@@ -28,6 +28,7 @@ Data, analytics, and application builds.
 | [Focus Timer](./focus-timer/) | JS | Pomodoro that reads the wall clock, not ticks; a hidden tab costs a naive timer 593s. 50 + 26 tests. |
 | [URL Shortener](./url-shortener/) | Flask + SQLite | Real backend: scheme allowlist, UNIQUE-constraint collision retry, click analytics. 44 tests. |
 | [Application Tracker](./job-tracker/) | Flask + SQLite | Capstone: CRUD + funnel analytics from an event log. The naive funnel reports 1 interview where 9 happened. 36 tests. |
+| [csv-parser](./csv-parser/) | Python | A CSV state machine diffed against the `csv` module over 50,000 generated documents, with the naive split measured beside it. |
 | [regex-nfa](./regex-nfa/) | Python | A Thompson NFA regex engine diffed against `re` over 76,744 cases. 12,072x faster where `re` backtracks. |
 | [docstring-search](./docstring-search/) | Python | BM25 over 2,077 stdlib docstrings, scored against substring search. With the textbook parameters it loses. |
 | [rate-limiter](./rate-limiter/) | Python | Four rate limiters audited against their own promise. Three of the four exceed it; two by 2x. 22 tests. |
