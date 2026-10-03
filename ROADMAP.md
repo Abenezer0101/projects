@@ -42,7 +42,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 
 ## Week 5 — Inference & Judgement
 - [x] **Day 29** — Forecasting with honest baselines: naive and seasonal-naive against a fitted model, walk-forward on a real series. Report the case where the baseline wins, if it does. *(done)*
-- [ ] **Day 30** — Nearest neighbours on real geography: haversine distance over a city coordinate set, brute force against a k-d tree, with the crossover size where the tree starts paying measured rather than assumed.
+- [x] **Day 30** — Nearest neighbours on real geography: haversine distance over a city coordinate set, brute force against a k-d tree, with the crossover size where the tree starts paying measured rather than assumed. *(done)*
 - [ ] **Day 31** — Recommender evaluation: a popularity baseline against collaborative filtering, scored under both a random split and a temporal split. Quantify how much the random split inflates the result.
 - [ ] **Day 32** — Anomaly detection on a real metric: z-score, MAD, and seasonal decomposition side by side. Show the single outlier that breaks the z-score by inflating its own standard deviation.
 - [ ] **Day 33** — Record linkage: dedupe a messy name-and-address set with blocking plus Jaro-Winkler, scored on a hand-labelled truth set. Report precision and recall, and the threshold trade-off between them.
