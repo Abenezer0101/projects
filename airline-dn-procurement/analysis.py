@@ -83,6 +83,7 @@ def stranded_coverage(conn):
                         "coverable": coverable,
                     })
                     remaining -= coverable
+                    surplus_owner["idle"] -= coverable
     return cases
 
 

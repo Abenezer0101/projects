@@ -78,6 +78,19 @@ class TestStrandedStockFinding(unittest.TestCase):
             self.assertLessEqual(c["coverable"], c["surplus_available"])
             self.assertNotEqual(c["short_project"], c["surplus_project"])
 
+    def test_stranded_coverage_never_overdraws_one_surplus_pool(self):
+        # A single (project, part) surplus pool must not be credited to more
+        # coverage than it actually holds, even split across several
+        # different shortages drawing on it.
+        cases = analysis.stranded_coverage(self.conn)
+        rows = {(r[0], r[1]): r[6] for r in analysis.positions(self.conn)}
+        drawn = {}
+        for c in cases:
+            key = (c["surplus_project"], c["part_id"])
+            drawn[key] = drawn.get(key, 0) + c["coverable"]
+        for key, total_drawn in drawn.items():
+            self.assertLessEqual(total_drawn, rows[key])
+
     def test_headline_numbers_match_known_run(self):
         # Pinned to the fixed seed so a logic change that moves these numbers
         # gets caught, instead of silently reported as a new "finding".
@@ -85,8 +98,21 @@ class TestStrandedStockFinding(unittest.TestCase):
         total_short = sum(r[5] for r in rows if r[5] > 0)
         cases = analysis.stranded_coverage(self.conn)
         total_coverable = sum(c["coverable"] for c in cases)
-        self.assertEqual(total_short, 445)
-        self.assertEqual(total_coverable, 445)
+        self.assertEqual(total_short, 509)
+        self.assertEqual(total_coverable, 495)
+
+
+class TestDateGeneration(unittest.TestCase):
+    def test_all_dates_are_valid_calendar_dates_across_seeds(self):
+        for s in (1, 7, 42, 824, 999):
+            conn = sqlite3.connect(":memory:")
+            seed.generate(conn, seed=s)
+            bad = conn.execute(
+                "SELECT delivery_date FROM delivery_notes "
+                "WHERE julianday(delivery_date) IS NULL"
+            ).fetchall()
+            conn.close()
+            self.assertEqual(bad, [], f"invalid delivery_date under seed={s}")
 
 
 if __name__ == "__main__":

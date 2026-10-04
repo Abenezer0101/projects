@@ -8,10 +8,18 @@ itself, not out of the random data.
 """
 import random
 import sqlite3
+from datetime import date, timedelta
 from pathlib import Path
 
 SEED = 42
 SCHEMA_PATH = Path(__file__).parent / "sql" / "schema.sql"
+EPOCH = date(2025, 1, 1)
+
+
+def fmt_date(day_offset: int) -> str:
+    """Day offset -> real calendar date, clamped at the epoch for negative
+    offsets (lateness/backorder math can push a date before its anchor)."""
+    return (EPOCH + timedelta(days=max(day_offset, 0))).isoformat()
 
 SUPPLIERS = [
     ("AeroParts Global", "US"), ("Transat Component Services", "CA"),
@@ -80,8 +88,7 @@ def generate(conn: sqlite3.Connection, seed: int = SEED) -> None:
         cur.execute(
             "INSERT INTO projects VALUES (?,?,?,?,?,?,?)",
             (i, code, tail, f"{check_type} on {tail}",
-             f"2025-{1 + start_day // 30:02d}-{1 + start_day % 28:02d}",
-             f"2025-{1 + (start_day + duration_days) // 30:02d}-{1 + (start_day + duration_days) % 28:02d}",
+             fmt_date(start_day), fmt_date(start_day + duration_days),
              round(budget, 2)),
         )
         projects.append((i, start_day, duration_days))
@@ -101,7 +108,7 @@ def generate(conn: sqlite3.Connection, seed: int = SEED) -> None:
             cur.execute(
                 "INSERT INTO purchase_orders VALUES (?,?,?,?,?)",
                 (po_id, f"PO-{10000 + po_id}", supplier_id, project_id,
-                 f"2025-{1 + order_day // 30:02d}-{1 + order_day % 28:02d}"),
+                 fmt_date(order_day)),
             )
 
             n_lines = rng.randint(2, 6)
@@ -115,7 +122,7 @@ def generate(conn: sqlite3.Connection, seed: int = SEED) -> None:
                 cur.execute(
                     "INSERT INTO po_lines VALUES (?,?,?,?,?,?)",
                     (po_line_id, po_id, part_id, qty_ordered, unit_price,
-                     f"2025-{1 + needed_day // 30:02d}-{1 + needed_day % 28:02d}"),
+                     fmt_date(needed_day)),
                 )
 
                 # Delivery pattern: how much of qty_ordered actually arrives
@@ -128,8 +135,11 @@ def generate(conn: sqlite3.Connection, seed: int = SEED) -> None:
                 else:
                     accepted_frac = 0.0  # nothing has arrived yet
 
-                if accepted_frac > 0:
-                    delivered = max(1, round(qty_ordered * accepted_frac))
+                # No floor at 1 unit: a small qty_ordered rounding down to 0
+                # under the backorder fraction is a real "nothing arrived
+                # yet" outcome, not a reason to force a full delivery.
+                delivered = round(qty_ordered * accepted_frac)
+                if delivered > 0:
                     rejected = 1 if rng.random() < 0.05 and delivered > 1 else 0
                     accepted = delivered - rejected
                     lateness = rng.randint(-10, 15)
@@ -138,8 +148,7 @@ def generate(conn: sqlite3.Connection, seed: int = SEED) -> None:
                     cur.execute(
                         "INSERT INTO delivery_notes VALUES (?,?,?,?,?)",
                         (dn_id, f"DN-{50000 + dn_id}", po_id,
-                         f"2025-{1 + max(delivery_day,0) // 30:02d}-{1 + max(delivery_day,0) % 28:02d}",
-                         status),
+                         fmt_date(delivery_day), status),
                     )
                     cur.execute(
                         "INSERT INTO dn_lines VALUES (?,?,?,?,?,?)",
@@ -158,7 +167,7 @@ def generate(conn: sqlite3.Connection, seed: int = SEED) -> None:
                             cur.execute(
                                 "INSERT INTO project_stock_issues VALUES (?,?,?,?,?,?)",
                                 (issue_id, project_id, part_id, qty_issued,
-                                 f"2025-{1 + max(issue_day,0) // 30:02d}-{1 + max(issue_day,0) % 28:02d}",
+                                 fmt_date(issue_day),
                                  f"WO-{project_id}-{issue_id}"),
                             )
                             issue_id += 1

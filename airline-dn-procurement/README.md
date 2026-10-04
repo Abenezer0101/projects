@@ -16,22 +16,24 @@ Simulating 15 projects, 8 suppliers, 20 part numbers, and a full
 order → deliver → consume cycle (fixed seed, zero hand-tuning):
 
 ```
-Total project-level shortfall across the fleet: 445 units
+Total project-level shortfall across the fleet: 509 units
 Of that, units sitting idle in another project's segregated stock
-for the identical part: 445 units (100%)
+for the identical part: 495 units (97%)
 
-  P-1012 (Pitot tube): A-CHECK-N226FY-2310 is short 20 units, while
-  D-CHECK-N789TD-2309 holds 24 unused -> 20 units stranded
-  P-1010 (Seat track fitting): D-CHECK-N671VP-2307 is short 18 units,
-  while D-CHECK-N558BC-2305 holds 34 unused -> 18 units stranded
+  P-1010 (Seat track fitting): A-CHECK-N140RM-2306 is short 21 units,
+  while D-CHECK-N558BC-2305 holds 40 unused -> 21 units stranded
+  P-1009 (Oxygen generator, pax): C-CHECK-N804AX-2301 is short 18 units,
+  while A-CHECK-N303GH-2308 holds 19 unused -> 18 units stranded
 ```
 
-Every unit of shortfall in this run could have been covered by surplus
-sitting idle under a *different* project for the *same part number* — stock
-that project segregation makes legally and physically unreachable. A
-plant-level inventory report would show the fleet comfortably stocked on
-`P-1012`; the hangar working `N226FY` would still be waiting on a pitot
-tube.
+97% of the shortfall in this run could have been covered by surplus sitting
+idle under a *different* project for the *same part number* — stock that
+project segregation makes legally and physically unreachable. A plant-level
+inventory report would show the fleet comfortably stocked on `P-1010`; the
+hangar working `N140RM` would still be waiting on a seat track fitting.
+(`stranded_coverage()` in `analysis.py` is a greedy match: each unit of idle
+surplus is credited to at most one shortage, so this figure can't double-count
+a surplus pool across several shortages.)
 
 This isn't a rigged scenario — it's generic to the model. Once receipts are
 bucketed per project and consumption is anything less than immediate and
@@ -42,9 +44,9 @@ matching of which project is short against which project is sitting on
 spares.
 
 Two secondary KPIs come out of the same data for free: on-time delivery
-rate by supplier (worst in this run: 18%), and average order→delivery lead
+rate by supplier (worst in this run: 31%), and average order→delivery lead
 time by part criticality (AOG parts arrive faster than routine ones here —
-20.1 vs 23.8 days — because urgency gets chased harder, not because AOG
+20.8 vs 21.5 days — because urgency gets chased harder, not because AOG
 parts ship faster by default).
 
 ## Schema
@@ -73,7 +75,7 @@ Zero dependencies, stdlib only (Python 3.11+):
 ```bash
 python3 seed.py        # builds airline_dn.db from the schema, fixed seed
 python3 analysis.py    # prints the finding + supplier/lead-time KPIs
-python3 -m unittest tests -v   # 8 tests: schema integrity + pinned finding numbers
+python3 -m unittest tests -v   # 10 tests: schema integrity, date validity, pinned finding numbers
 ```
 
 `tests.py` seeds an in-memory database independently of `airline_dn.db`,
