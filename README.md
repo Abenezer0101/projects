@@ -40,6 +40,7 @@ Data, analytics, and application builds.
 | [assay](./assay/) | Python | A data quality gate that audits its own rules by corrupting data on purpose. 58 tests, zero dependencies. |
 | [omnitwin](./omnitwin/) | Python | A digital twin of a small business: price, ad spend and inventory simulated before you commit. 37 tests, zero dependencies. |
 | [thicket](./thicket/) | Python | Gradient boosted trees written from scratch and diffed against scikit-learn, plus a demo of how preprocessing before the split fakes accuracy. 26 tests. |
+| [Airline Supply Chain: Project-Specific DN Procurement](./airline-dn-procurement/) | Python, SQLite | MRO procurement where receipts are earmarked per project: 445 units short across the simulated fleet, 100% of it idle under a different project's segregated stock for the same part number. 8 tests. |
 | [Sales Ops Dashboard](./sales-ops-dashboard/) | JS | Sales operations dashboard. |
 | [Impossible Gift Machine](./gift-app/) | JS | Gift-picking app. |
 
