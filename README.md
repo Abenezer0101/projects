@@ -28,6 +28,7 @@ Data, analytics, and application builds.
 | [Focus Timer](./focus-timer/) | JS | Pomodoro that reads the wall clock, not ticks; a hidden tab costs a naive timer 593s. 50 + 26 tests. |
 | [URL Shortener](./url-shortener/) | Flask + SQLite | Real backend: scheme allowlist, UNIQUE-constraint collision retry, click analytics. 44 tests. |
 | [Application Tracker](./job-tracker/) | Flask + SQLite | Capstone: CRUD + funnel analytics from an event log. The naive funnel reports 1 interview where 9 happened. 36 tests. |
+| [anomaly-detection](./anomaly-detection/) | Python | The z-score cannot flag anything in a 10-point window, and 23 of 24 hours here cannot show a total outage at all. 31 tests. |
 | [recommender-eval](./recommender-eval/) | Python | A random split does not just inflate recall; it picks a different winning model 60% of the time. 27 tests. |
 | [nearest-neighbour](./nearest-neighbour/) | Python | A k-d tree on lat/lon returns wrong neighbours; clustering turns a 375x speedup into 3.5x. 23 tests. |
 | [forecast-baselines](./forecast-baselines/) | Python | Seven forecasters walk-forward; the historical mean wins at MASE 0.748, and the irreducible error has a closed form. |
