@@ -46,7 +46,7 @@ Rule: every project must be genuine and self-contained (real dataset or real log
 - [x] **Day 31** — Recommender evaluation: a popularity baseline against collaborative filtering, scored under both a random split and a temporal split. Quantify how much the random split inflates the result. *(done)*
 - [x] **Day 32** — Anomaly detection on a real metric: z-score, MAD, and seasonal decomposition side by side. Show the single outlier that breaks the z-score by inflating its own standard deviation. *(done)*
 - [x] **Day 33** — Record linkage: dedupe a messy name-and-address set with blocking plus Jaro-Winkler, scored on a hand-labelled truth set. Report precision and recall, and the threshold trade-off between them. *(done)*
-- [ ] **Day 34** — Constrained optimisation: pick a cheapest configuration under integer constraints, with the LP relaxation compared against the exact answer and the gap between them reported.
+- [x] **Day 34** — Constrained optimisation: pick a cheapest configuration under integer constraints, with the LP relaxation compared against the exact answer and the gap between them reported. *(done)*
 - [ ] **Day 35** — Capstone II: one CLI that re-derives every number claimed in every README in this repository and exits non-zero if any claim no longer reproduces. A portfolio that checks itself.
 
 _All figures/data in these projects are illustrative for a portfolio unless a source is cited._
